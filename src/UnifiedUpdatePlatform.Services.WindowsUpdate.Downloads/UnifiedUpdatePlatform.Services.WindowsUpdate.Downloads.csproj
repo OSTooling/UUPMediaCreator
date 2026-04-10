@@ -6,7 +6,7 @@
     <IntermediateOutputPath>$(SolutionDir)intermediate\$(Platform)\$(Configuration)\UnifiedUpdatePlatform.Services.WindowsUpdate.Downloads\</IntermediateOutputPath>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="System.Text.Json" Version="9.0.4" />
+    <PackageReference Include="System.Text.Json" Version="10.0.5" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\CompDB\UnifiedUpdatePlatform.Services.Composition.Database.csproj" />

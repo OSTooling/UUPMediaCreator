@@ -14,6 +14,6 @@
     <ProjectReference Include="..\CompDB\UnifiedUpdatePlatform.Services.Composition.Database.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="System.Text.Json" Version="9.0.4" />
+    <PackageReference Include="System.Text.Json" Version="10.0.5" />
   </ItemGroup>
 </Project>
