@@ -30,74 +30,11 @@ using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
+using UnifiedUpdatePlatform.Services.WindowsUpdate.ESRP;
+using UnifiedUpdatePlatform.Services.WindowsUpdate.Models.FE3.JSON.ESRP;
 
 namespace UnifiedUpdatePlatform.Services.WindowsUpdate.Downloads
 {
-    public class GeneralDownloadProgress
-    {
-        public long EstimatedTotalBytes;
-        public long DownloadedTotalBytes;
-        public int NumFilesDownloadedSuccessfully;
-        public int NumFilesDownloadedUnsuccessfully;
-        public int NumFiles;
-
-        public FileDownloadStatus[] DownloadedStatus;
-    }
-
-    public enum FileStatus
-    {
-        Downloading,
-        Verifying,
-        Completed,
-        Expired,
-        Failed
-    }
-
-    public class FileDownloadStatus
-    {
-        public FileStatus FileStatus;
-        public long DownloadedBytes;
-        public long HashedBytes;
-        public UUPFile File;
-        public FileDownloadStatus(UUPFile file)
-        {
-            File = file;
-        }
-    }
-
-    public class UUPFile
-    {
-        public FileExchangeV3FileDownloadInformation WUFile
-        {
-            get; set;
-        }
-        public string FileName
-        {
-            get; set;
-        }
-        public long FileSize
-        {
-            get; set;
-        }
-        public string Hash
-        {
-            get; set;
-        }
-        public string HashAlgorithm
-        {
-            get; set;
-        }
-
-        public UUPFile(FileExchangeV3FileDownloadInformation WUFile, string FileName, long FileSize, string Hash, string HashAlgorithm)
-        {
-            this.WUFile = WUFile;
-            this.FileName = FileName;
-            this.FileSize = FileSize;
-            this.Hash = Hash;
-            this.HashAlgorithm = HashAlgorithm;
-        }
-    }
-
     public class HttpDownloader : IDisposable
     {
         private const long CHUNK_SIZE = 8_388_608 + 65_536; //Slice 8MB+64KB
@@ -244,7 +181,7 @@ namespace UnifiedUpdatePlatform.Services.WindowsUpdate.Downloads
             int blockBufferSize = bufferSize;
 
             //These variables are used to decrypt files if esrp is available.
-            EsrpDecryptor esrpDecrypter = null; //Implements IDisposable
+            ESRPCryptography esrpDecrypter = null; //Implements IDisposable
             byte[] backBuffer = null;
             int backBufferLength = 0;
             long blockCount = 0;
@@ -255,7 +192,7 @@ namespace UnifiedUpdatePlatform.Services.WindowsUpdate.Downloads
             {
                 esrp = downloadFile.WUFile.EsrpDecryptionInformation;
                 backBuffer = new byte[blockBufferSize];
-                esrpDecrypter = new EsrpDecryptor(esrp);
+                esrpDecrypter = new ESRPCryptography(esrp);
                 blockBufferSize = (int)esrp.EncryptionBufferSize;
             }
 

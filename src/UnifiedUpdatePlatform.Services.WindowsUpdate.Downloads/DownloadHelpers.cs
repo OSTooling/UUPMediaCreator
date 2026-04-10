@@ -29,28 +29,96 @@ using System.Threading.Tasks;
 using UnifiedUpdatePlatform.Services.Composition.Database;
 using UnifiedUpdatePlatform.Services.Composition.Database.Applications;
 using UnifiedUpdatePlatform.Services.WindowsUpdate;
+using UnifiedUpdatePlatform.Services.WindowsUpdate.Targeting;
 
 namespace UnifiedUpdatePlatform.Services.WindowsUpdate.Downloads
 {
     public static partial class UpdateUtils
     {
-        public static string[] GetFilenameForCEUIFile(CExtendedUpdateInfoXml.File file2, IEnumerable<PayloadItem> payloadItems)
+        public static string[] GetFilenameForCEUIFile(Models.FE3.XML.ExtendedUpdateInfo.File extendedUpdateInfoFile, IEnumerable<PayloadItem> payloadItems)
         {
-            string filename = file2.FileName.Replace('\\', Path.DirectorySeparatorChar);
-            if (payloadItems.Any(x => x.PayloadHash == file2.AdditionalDigest.Text || x.PayloadHash == file2.Digest))
+            string filename = extendedUpdateInfoFile.FileName.Replace('\\', Path.DirectorySeparatorChar);
+
+            if (payloadItems.Any(x => x.PayloadHash == extendedUpdateInfoFile.AdditionalDigest.Text || x.PayloadHash == extendedUpdateInfoFile.Digest))
             {
-                IEnumerable<PayloadItem> payloads = payloadItems.Where(x => x.PayloadHash == file2.AdditionalDigest.Text || x.PayloadHash == file2.Digest);
-                return payloads.Select(p => p.Path.Replace('\\', Path.DirectorySeparatorChar)).ToArray();
+                IEnumerable<PayloadItem> payloads = payloadItems.Where(x => x.PayloadHash == extendedUpdateInfoFile.AdditionalDigest.Text || x.PayloadHash == extendedUpdateInfoFile.Digest);
+                return payloads.Select(p => p.Path.Replace('\\', Path.DirectorySeparatorChar)).DistinctBy(x => x.ToLower()).ToArray();
             }
             else if (!payloadItems.Any() && filename.Contains('_') && !filename.StartsWith("_") && (!filename.Contains('-') || filename.IndexOf('-') > filename.IndexOf('_')))
             {
                 filename = filename[..filename.IndexOf('_')] + Path.DirectorySeparatorChar + filename[(filename.IndexOf('_') + 1)..];
-                return new string[] { filename.TrimStart(Path.DirectorySeparatorChar) };
+                return [filename.TrimStart(Path.DirectorySeparatorChar)];
             }
-            return new string[] { filename };
+
+            return [filename];
         }
 
-        public static bool ShouldFileGetDownloaded(CExtendedUpdateInfoXml.File file2, IEnumerable<PayloadItem> payloadItems)
+        public static string FixFilePath((Models.FE3.XML.ExtendedUpdateInfo.File, FileExchangeV3FileDownloadInformation) boundFile, HashSet<string> pathList, HashSet<BaseManifest> compDBs, string path)
+        {
+            string newPath = path;
+
+            MatchCollection guidMatches = guidRegex().Matches(newPath);
+
+            // Some file packages (especially for device manifests) contain guids as part of their name and often the actual name of the file after, so trim that right away
+            foreach (Match match in guidMatches.OrderByDescending(x => x.Index + x.Length))
+            {
+                newPath = string.Concat(newPath.AsSpan(0, match.Index), newPath.AsSpan(match.Index + match.Length));
+            }
+
+            // It is possible that above operation caused the file to go empty, check for that and if thats the case, revert now.
+            if (newPath != path && (string.IsNullOrEmpty(newPath) || newPath.StartsWith('.')))
+            {
+                newPath = path;
+            }
+
+            try
+            {
+                foreach (BaseManifest compDb in compDBs)
+                {
+                    foreach (Package pkg in compDb.Packages.Package)
+                    {
+                        string payloadHash = pkg.Payload.PayloadItem[0].PayloadHash;
+                        if (payloadHash == boundFile.Item1.AdditionalDigest.Text || payloadHash == boundFile.Item1.Digest)
+                        {
+                            if (pkg.ID.Contains('-') && pkg.ID.Contains(".inf", StringComparison.InvariantCultureIgnoreCase))
+                            {
+                                newPath = pkg.ID.Split("-")[1].Replace(".inf", ".cab", StringComparison.InvariantCultureIgnoreCase);
+                            }
+                            break;
+                        }
+                    }
+                }
+            }
+            catch { }
+
+            if (!pathList.Add(newPath.ToLower()))
+            {
+                string basePath, suffix;
+
+                if (Path.HasExtension(newPath))
+                {
+                    basePath = Path.Combine(Path.GetDirectoryName(newPath), Path.GetFileNameWithoutExtension(newPath));
+                    suffix = Path.GetExtension(newPath);
+                }
+                else
+                {
+                    basePath = Path.Combine(Path.GetDirectoryName(newPath), Path.GetFileName(newPath));
+                    suffix = "";
+                }
+
+                uint i = 1;
+
+                do
+                {
+                    newPath = $"{basePath} ({i++}){suffix}";
+                }
+                while (!pathList.Add(newPath.ToLower()));
+            }
+
+            return newPath;
+        }
+
+        public static bool ShouldFileGetDownloaded(Models.FE3.XML.ExtendedUpdateInfo.File file2, IEnumerable<PayloadItem> payloadItems)
         {
             string filename = file2.FileName.Replace('\\', Path.DirectorySeparatorChar);
             if (payloadItems.Any(x => x.PayloadHash == file2.AdditionalDigest.Text || x.PayloadHash == file2.Digest))
@@ -77,24 +145,24 @@ namespace UnifiedUpdatePlatform.Services.WindowsUpdate.Downloads
             return update;
         }
 
-        private static bool IsFileBanned(CExtendedUpdateInfoXml.File file2, IEnumerable<PayloadItem> bannedItems)
+        private static bool IsFileBanned(Models.FE3.XML.ExtendedUpdateInfo.File file2, IEnumerable<PayloadItem> bannedItems)
         {
             return bannedItems.Any(x => x.PayloadHash == file2.AdditionalDigest.Text || x.PayloadHash == file2.Digest);
         }
 
         private static
         (
-            HashSet<CompDB> selectedCompDBs,
-            HashSet<CompDB> discardedCompDBs,
-            HashSet<CompDB> specificCompDBs
+            HashSet<BaseManifest> selectedCompDBs,
+            HashSet<BaseManifest> discardedCompDBs,
+            HashSet<BaseManifest> specificCompDBs
         )
-        FilterCompDBs(HashSet<CompDB> compDBs, string Edition, string Language)
+        FilterCompDBs(HashSet<BaseManifest> compDBs, string Edition, string Language)
         {
-            HashSet<CompDB> selectedCompDBs = new();
-            HashSet<CompDB> discardedCompDBs = new();
-            HashSet<CompDB> specificCompDBs = new();
+            HashSet<BaseManifest> selectedCompDBs = [];
+            HashSet<BaseManifest> discardedCompDBs = [];
+            HashSet<BaseManifest> specificCompDBs = [];
 
-            foreach (CompDB cdb in compDBs)
+            foreach (BaseManifest cdb in compDBs)
             {
                 bool IsDiff = cdb.Tags?.Tag?.Any(x => x.Name.Equals("UpdateType", StringComparison.InvariantCultureIgnoreCase) && (x.Value.Equals("Diff", StringComparison.InvariantCultureIgnoreCase) || x.Value.Equals("Baseless", StringComparison.InvariantCultureIgnoreCase))) == true;
 
@@ -151,7 +219,7 @@ namespace UnifiedUpdatePlatform.Services.WindowsUpdate.Downloads
                         // Get edition + language
                         case (true, true):
                             {
-                                if ((!hasEdition && !hasLang || !hasEdition && hasLang && langMatching || !hasLang && hasEdition && editionMatching || hasEdition && hasLang && langMatching && editionMatching) && !IsNeutral)
+                                if (((!hasEdition && !hasLang) || (!hasEdition && hasLang && langMatching) || (!hasLang && hasEdition && editionMatching) || (hasEdition && hasLang && langMatching && editionMatching)) && !IsNeutral)
                                 {
                                     _ = specificCompDBs.Add(cdb);
                                     _ = selectedCompDBs.Add(cdb);
@@ -174,26 +242,26 @@ namespace UnifiedUpdatePlatform.Services.WindowsUpdate.Downloads
             HashSet<PayloadItem> payloadItems,
             HashSet<PayloadItem> bannedPayloadItems
         )
-        BuildListOfPayloads(HashSet<CompDB> compDBs, string Edition, string Language)
+        BuildListOfPayloads(HashSet<BaseManifest> compDBs, string Edition, string Language)
         {
-            HashSet<PayloadItem> payloadItems = new();
-            HashSet<PayloadItem> bannedPayloadItems = new();
+            HashSet<PayloadItem> payloadItems = [];
+            HashSet<PayloadItem> bannedPayloadItems = [];
 
             if (compDBs == null)
             {
                 return (payloadItems, bannedPayloadItems);
             }
 
-            IEnumerable<CompDB> AppCompDBs = null;
+            IEnumerable<BaseManifest> AppCompDBs = null;
 
-            (HashSet<CompDB> selectedCompDBs, HashSet<CompDB> discardedCompDBs, HashSet<CompDB> specificCompDBs) = FilterCompDBs(compDBs, Edition, Language);
+            (HashSet<BaseManifest> selectedCompDBs, HashSet<BaseManifest> discardedCompDBs, HashSet<BaseManifest> specificCompDBs) = FilterCompDBs(compDBs, Edition, Language);
 
             if (compDBs.Any(x => x.Name?.StartsWith("Build~") == true && (x.Name?.EndsWith("~Desktop_Apps~~") == true || x.Name?.EndsWith("~Desktop_Apps_Moment~~") == true)))
             {
                 AppCompDBs = compDBs.Where(x => x.Name?.StartsWith("Build~") == true && (x.Name?.EndsWith("~Desktop_Apps~~") == true || x.Name?.EndsWith("~Desktop_Apps_Moment~~") == true));
             }
 
-            foreach (CompDB cdb in selectedCompDBs)
+            foreach (BaseManifest cdb in selectedCompDBs)
             {
                 if (AppCompDBs?.Contains(cdb) == true || cdb.Packages == null)
                 {
@@ -234,7 +302,7 @@ namespace UnifiedUpdatePlatform.Services.WindowsUpdate.Downloads
                 }
             }
 
-            foreach (CompDB cdb in discardedCompDBs)
+            foreach (BaseManifest cdb in discardedCompDBs)
             {
                 if (AppCompDBs?.Contains(cdb) == true || cdb.Packages == null)
                 {
@@ -273,14 +341,14 @@ namespace UnifiedUpdatePlatform.Services.WindowsUpdate.Downloads
 
             if (AppCompDBs != null)
             {
-                List<string> payloadHashesToKeep = new();
+                List<string> payloadHashesToKeep = [];
 
                 switch (!string.IsNullOrEmpty(Language), !string.IsNullOrEmpty(Edition))
                 {
                     // Get everything
                     case (false, false):
                         {
-                            foreach (CompDB AppCompDB in AppCompDBs)
+                            foreach (BaseManifest AppCompDB in AppCompDBs)
                             {
                                 foreach (Package pkg in AppCompDB.Packages.Package)
                                 {
@@ -322,7 +390,7 @@ namespace UnifiedUpdatePlatform.Services.WindowsUpdate.Downloads
                     // Get edition
                     case (false, true):
                         {
-                            foreach (CompDB cdb in compDBs.GetEditionCompDBs().Where(cdb =>
+                            foreach (BaseManifest cdb in compDBs.GetEditionCompDBs().Where(cdb =>
                             {
                                 bool hasEdition = cdb.Tags?.Tag?.Any(x => x.Name.Equals("Edition", StringComparison.InvariantCultureIgnoreCase)) == true;
 
@@ -343,7 +411,7 @@ namespace UnifiedUpdatePlatform.Services.WindowsUpdate.Downloads
                     // Get language
                     case (true, false):
                         {
-                            foreach (CompDB cdb in compDBs.GetEditionCompDBs().Where(cdb =>
+                            foreach (BaseManifest cdb in compDBs.GetEditionCompDBs().Where(cdb =>
                             {
                                 bool hasLang = cdb.Tags?.Tag?.Any(x => x.Name.Equals("Language", StringComparison.InvariantCultureIgnoreCase)) == true;
 
@@ -364,7 +432,7 @@ namespace UnifiedUpdatePlatform.Services.WindowsUpdate.Downloads
                     // Get edition + language
                     case (true, true):
                         {
-                            foreach (CompDB cdb in compDBs.GetEditionCompDBs().Where(cdb =>
+                            foreach (BaseManifest cdb in compDBs.GetEditionCompDBs().Where(cdb =>
                             {
                                 bool hasLang = cdb.Tags?.Tag?.Any(x => x.Name.Equals("Language", StringComparison.InvariantCultureIgnoreCase)) == true;
                                 bool hasEdition = cdb.Tags?.Tag?.Any(x => x.Name.Equals("Edition", StringComparison.InvariantCultureIgnoreCase)) == true;
@@ -386,7 +454,7 @@ namespace UnifiedUpdatePlatform.Services.WindowsUpdate.Downloads
                         }
                 }
 
-                foreach (CompDB AppCompDB in AppCompDBs)
+                foreach (BaseManifest AppCompDB in AppCompDBs)
                 {
                     foreach (Package pkg in AppCompDB.Packages.Package)
                     {
@@ -402,7 +470,7 @@ namespace UnifiedUpdatePlatform.Services.WindowsUpdate.Downloads
                     }
                 }
 
-                foreach (CompDB AppCompDB in AppCompDBs)
+                foreach (BaseManifest AppCompDB in AppCompDBs)
                 {
                     if (AppCompDB.AppX?.AppXPackages?.Package != null)
                     {
@@ -430,7 +498,7 @@ namespace UnifiedUpdatePlatform.Services.WindowsUpdate.Downloads
                 }
                 else
                 {
-                    foreach (CompDB specificCompDB in specificCompDBs)
+                    foreach (BaseManifest specificCompDB in specificCompDBs)
                     {
                         if (AppCompDBs?.Contains(specificCompDB) == true || specificCompDB.Packages == null)
                         {
@@ -478,9 +546,9 @@ namespace UnifiedUpdatePlatform.Services.WindowsUpdate.Downloads
             IEnumerable<string> languages = null;
 
             int returnCode = 0;
-            IEnumerable<CExtendedUpdateInfoXml.File> filesToDownload = null;
+            IEnumerable<Models.FE3.XML.ExtendedUpdateInfo.File> filesToDownload = null;
 
-            HashSet<CompDB> compDBs = await update.GetCompDBsAsync();
+            HashSet<BaseManifest> compDBs = await update.GetCompDBsAsync();
 
             await Task.WhenAll(
                 Task.Run(async () => buildstr = await update.GetBuildStringAsync()),
@@ -510,6 +578,12 @@ namespace UnifiedUpdatePlatform.Services.WindowsUpdate.Downloads
             (HashSet<PayloadItem> payloadItems, HashSet<PayloadItem> bannedPayloadItems) =
                 BuildListOfPayloads(compDBs, Edition, Language);
 
+            JsonSerializerOptions jsonSerializerOptions = new()
+            {
+                WriteIndented = true,
+                IncludeFields = true
+            };
+
             do
             {
                 IEnumerable<FileExchangeV3FileDownloadInformation> fileUrls = await FE3Handler.GetFileUrls(update) ?? throw new Exception("Getting file urls failed.");
@@ -518,61 +592,46 @@ namespace UnifiedUpdatePlatform.Services.WindowsUpdate.Downloads
                     _ = Directory.CreateDirectory(OutputFolder);
                 }
 
-                string tmpname = update.Xml.LocalizedProperties.Title + " (" + MachineType.ToString() + ").uupmcreplay";
+                string tmpname = $"{update.Xml.LocalizedProperties.Title} ({MachineType}).uupmcreplay";
                 illegalCharacters = invalidCharactersRegex();
                 tmpname = illegalCharacters.Replace(tmpname, "");
                 string filename = Path.Combine(OutputFolder, tmpname);
 
                 if (WriteMetadata && !File.Exists(filename))
                 {
-                    File.WriteAllText(filename, JsonSerializer.Serialize(update, new JsonSerializerOptions() { WriteIndented = true, IncludeFields = true }));
+                    File.WriteAllText(filename, JsonSerializer.Serialize(update, jsonSerializerOptions));
                 }
 
                 using HttpDownloader helperDl = new(OutputFolder, downloadThreads);
-                filesToDownload = update.Xml.Files.File.AsParallel().Where(x => !IsFileBanned(x, bannedPayloadItems));
+
+                filesToDownload = update.Xml.Files.File.DistinctBy(x => $"{x.Digest}|{x.DigestAlgorithm}|{x.AdditionalDigest.Algorithm}|{x.AdditionalDigest.Text}").AsParallel().Where(x => !IsFileBanned(x, bannedPayloadItems));
 
                 returnCode = 0;
 
-                IEnumerable<(CExtendedUpdateInfoXml.File, FileExchangeV3FileDownloadInformation)> boundList = filesToDownload
+                IEnumerable<(Models.FE3.XML.ExtendedUpdateInfo.File, FileExchangeV3FileDownloadInformation)> boundList = filesToDownload
                     .AsParallel()
                     .Select(x => (x, fileUrls.First(y => y.Digest == x.Digest)))
                     //.Where(x => UpdateUtils.ShouldFileGetDownloaded(x.x, payloadItems))
                     .OrderBy(x => x.Item2.ExpirationDate);
 
-                IEnumerable<UUPFile> fileList = boundList.SelectMany(boundFile =>
-                {
-                    return GetFilenameForCEUIFile(boundFile.Item1, payloadItems).Select(path =>
-                    {
-                        /*try
-                        {
-                            foreach (CompDB compDb in compDBs)
-                            {
-                                foreach (Package pkg in compDb.Packages.Package)
-                                {
-                                    string payloadHash = pkg.Payload.PayloadItem[0].PayloadHash;
-                                    if (payloadHash == boundFile.Item1.AdditionalDigest.Text || payloadHash == boundFile.Item1.Digest)
-                                    {
-                                        if (pkg.ID.Contains('-') && pkg.ID.Contains(".inf", StringComparison.InvariantCultureIgnoreCase))
-                                        {
-                                            path = pkg.ID.Split("-")[1].Replace(".inf", ".cab", StringComparison.InvariantCultureIgnoreCase);
-                                        }
-                                        break;
-                                    }
-                                }
-                            }
-                        }
-                        catch { }*/
+                List<UUPFile> fileList = [];
+                HashSet<string> pathList = [];
 
-                        return new UUPFile(
+                foreach ((Models.FE3.XML.ExtendedUpdateInfo.File, FileExchangeV3FileDownloadInformation) boundFile in boundList)
+                {
+                    string[] paths = GetFilenameForCEUIFile(boundFile.Item1, payloadItems);
+                    foreach (string path in paths)
+                    {
+                        fileList.Add(new UUPFile(
                             boundFile.Item2,
-                            path,
+                            FixFilePath(boundFile, pathList, compDBs, path),
                             long.Parse(boundFile.Item1.Size),
                             boundFile.Item1.AdditionalDigest.Text,
-                            boundFile.Item1.AdditionalDigest.Algorithm);
-                    });
-                });
+                            boundFile.Item1.AdditionalDigest.Algorithm));
+                    }
+                }
 
-                returnCode = await helperDl.DownloadAsync(fileList.ToList(), generalDownloadProgress) ? 0 : -1;
+                returnCode = await helperDl.DownloadAsync([.. fileList], generalDownloadProgress) ? 0 : -1;
 
                 if (returnCode != 0)
                 {
@@ -586,5 +645,8 @@ namespace UnifiedUpdatePlatform.Services.WindowsUpdate.Downloads
 
         [GeneratedRegex("[\\\\/:*?\"<>|]")]
         private static partial Regex invalidCharactersRegex();
+
+        [GeneratedRegex("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}")]
+        private static partial Regex guidRegex();
     }
 }

@@ -282,11 +282,11 @@ namespace UnifiedUpdatePlatform.Media.Creator.Installer
             string winpejpgtmp = tempManager.GetTempPath();
             File.WriteAllBytes(winpejpgtmp, Constants.winpejpg);
 
-            List<(string fileToAdd, string destination)> updateDirectives = new()
-            {
+            List<(string fileToAdd, string destination)> updateDirectives =
+            [
                 (bgfile, Path.Combine("Windows", "System32", "setup.bmp")),
                 (winpejpgtmp, Path.Combine("Windows", "System32", "winpe.jpg"))
-            };
+            ];
 
             progressCallback?.Log("Backporting missing files");
 
@@ -383,10 +383,10 @@ namespace UnifiedUpdatePlatform.Media.Creator.Installer
             string peshellini = Path.Combine(sys32, "winpeshl.ini");
 
             progressCallback?.Log("Preparing PE for cleanup");
-            List<(string fileToAdd, string destination)> updateDirectives = new()
-            {
+            List<(string fileToAdd, string destination)> updateDirectives =
+            [
                 (null, peshellini)
-            };
+            ];
 
             //
             // Cleanup log file from RE conversion phase mentions
@@ -403,7 +403,7 @@ namespace UnifiedUpdatePlatform.Media.Creator.Installer
                     string[] lines = File.ReadAllLines(logfile);
 
                     int bootsessioncount = 0;
-                    List<string> finallines = new();
+                    List<string> finallines = [];
                     foreach (string line in lines)
                     {
                         if (line.StartsWith("[Boot Session: ", StringComparison.InvariantCultureIgnoreCase))

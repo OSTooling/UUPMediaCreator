@@ -24,10 +24,10 @@ using System.Xml.Serialization;
 
 namespace UnifiedUpdatePlatform.Services.Composition.Database
 {
-    [XmlRoot(ElementName = "InitialIntents", Namespace = "http://schemas.microsoft.com/embedded/2004/10/ImageUpdate")]
+    [XmlRoot(ElementName = "InitialIntents")]
     public class InitialIntents
     {
-        [XmlElement(ElementName = "InitialIntent", Namespace = "http://schemas.microsoft.com/embedded/2004/10/ImageUpdate")]
+        [XmlElement(ElementName = "InitialIntent")]
         public List<InitialIntent> InitialIntent
         {
             get; set;

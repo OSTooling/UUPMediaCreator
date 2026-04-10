@@ -23,15 +23,15 @@ using System.Xml.Serialization;
 
 namespace UnifiedUpdatePlatform.Services.Composition.Database
 {
-    [XmlRoot(ElementName = "Tag", Namespace = "http://schemas.microsoft.com/embedded/2004/10/ImageUpdate")]
+    [XmlRoot(ElementName = "Tag")]
     public class Tag
     {
-        [XmlAttribute(AttributeName = "Name", Namespace = "http://schemas.microsoft.com/embedded/2004/10/ImageUpdate")]
+        [XmlAttribute(AttributeName = "Name")]
         public string Name
         {
             get; set;
         }
-        [XmlAttribute(AttributeName = "Value", Namespace = "http://schemas.microsoft.com/embedded/2004/10/ImageUpdate")]
+        [XmlAttribute(AttributeName = "Value")]
         public string Value
         {
             get; set;

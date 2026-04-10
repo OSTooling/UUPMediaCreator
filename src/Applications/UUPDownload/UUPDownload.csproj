@@ -10,6 +10,14 @@
     <Platforms>AnyCPU;x64;x86;arm64</Platforms>
   </PropertyGroup>
   <ItemGroup>
+    <None Remove="DriverConfig.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="DriverConfig.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\..\Cabinet\Cabinet.csproj" />
     <ProjectReference Include="..\..\UnifiedUpdatePlatform.Services.WindowsUpdate.Downloads\UnifiedUpdatePlatform.Services.WindowsUpdate.Downloads.csproj" />
     <ProjectReference Include="..\..\CompDB\UnifiedUpdatePlatform.Services.Composition.Database.csproj" />
@@ -19,5 +27,6 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="CommandLineParser" Version="2.9.1" />
+    <PackageReference Include="Microsoft.Management.Infrastructure" Version="3.0.0" />
   </ItemGroup>
 </Project>

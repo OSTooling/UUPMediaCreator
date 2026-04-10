@@ -24,6 +24,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using UnifiedUpdatePlatform.Services.WindowsUpdate;
+using UnifiedUpdatePlatform.Services.WindowsUpdate.Targeting;
+using UUPDownload.Options;
 
 namespace UUPDownload
 {
@@ -59,7 +61,7 @@ namespace UUPDownload
 
         private static async Task GetRingBuilds(GetBuildsOptions opts)
         {
-            Dictionary<CTAC, string> CTACs = new();
+            Dictionary<CTAC, string> CTACs = [];
 
             CTACs = string.IsNullOrWhiteSpace(opts.TargetingAttribute)
                 ? GetRingCTACs(opts.MachineType, opts.ReportingSku)

@@ -33,7 +33,7 @@ namespace UUPDownload
 
         public static IDictionary<string, string> GetAppxPackageLicenseFileMapFromCabs(IList<string> cabPaths)
         {
-            Dictionary<string, string> licenseMap = new();
+            Dictionary<string, string> licenseMap = [];
             foreach (string cabPath in cabPaths)
             {
                 if (new FileInfo(cabPath).Length > MAXIMUM_CANDIDATE_CAB_SIZE)

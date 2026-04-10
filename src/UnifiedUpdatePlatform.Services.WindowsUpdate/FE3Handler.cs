@@ -26,11 +26,21 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Serialization;
-using UnifiedUpdatePlatform.Services.Composition.Database;
+using UnifiedUpdatePlatform.Services.WindowsUpdate.Models.FE3.JSON.AppxMetadata;
+using UnifiedUpdatePlatform.Services.WindowsUpdate.Models.FE3.SOAP.Common;
+using UnifiedUpdatePlatform.Services.WindowsUpdate.Models.FE3.SOAP.GetCookie.Request;
+using UnifiedUpdatePlatform.Services.WindowsUpdate.Models.FE3.SOAP.GetCookie.Response;
+using UnifiedUpdatePlatform.Services.WindowsUpdate.Models.FE3.SOAP.GetExtendedUpdateInfo.Request;
+using UnifiedUpdatePlatform.Services.WindowsUpdate.Models.FE3.SOAP.GetExtendedUpdateInfo.Response;
+using UnifiedUpdatePlatform.Services.WindowsUpdate.Models.FE3.SOAP.GetExtendedUpdateInfo2.Request;
+using UnifiedUpdatePlatform.Services.WindowsUpdate.Models.FE3.SOAP.GetExtendedUpdateInfo2.Response;
+using UnifiedUpdatePlatform.Services.WindowsUpdate.Models.FE3.SOAP.SyncUpdates.Request;
+using UnifiedUpdatePlatform.Services.WindowsUpdate.Models.FE3.SOAP.SyncUpdates.Response;
+using UnifiedUpdatePlatform.Services.WindowsUpdate.Models.FE3.XML.ExtendedUpdateInfo;
+using UnifiedUpdatePlatform.Services.WindowsUpdate.Targeting;
 
 namespace UnifiedUpdatePlatform.Services.WindowsUpdate
 {
@@ -76,7 +86,7 @@ namespace UnifiedUpdatePlatform.Services.WindowsUpdate
             return resultString;
         }
 
-        private static CSOAPCommon.Envelope GetEnveloppe(string method, string authorizationToken, bool secured)
+        private static Envelope GetEnveloppe(string method, string authorizationToken, bool secured)
         {
             string _endpoint = Constants.Endpoint;
             if (secured)
@@ -84,42 +94,42 @@ namespace UnifiedUpdatePlatform.Services.WindowsUpdate
                 _endpoint += "/secured";
             }
 
-            CSOAPCommon.Envelope envelope = new()
+            Envelope envelope = new()
             {
-                Header = new CSOAPCommon.Header()
+                Header = new Header()
                 {
-                    Action = new CSOAPCommon.Action()
+                    Action = new Models.FE3.SOAP.Common.Action()
                     {
                         MustUnderstand = "1",
                         Text = Constants.Action + method
                     },
                     MessageID = $"urn:uuid:{Guid.NewGuid():D}",
-                    To = new CSOAPCommon.To()
+                    To = new To()
                     {
                         MustUnderstand = "1",
                         Text = _endpoint
                     },
-                    Security = new CSOAPCommon.Security()
+                    Security = new Security()
                     {
                         MustUnderstand = "1",
-                        Timestamp = new CSOAPCommon.Timestamp()
+                        Timestamp = new Timestamp()
                         {
                             Created = DateTime.Now.ToUniversalTime().ToString("yyyy'-'MM'-'dd'T'HH':'mm':'ss'.'fff'Z'"),
                             Expires = Constants.SecurityExpirationTimestamp
                         },
-                        WindowsUpdateTicketsToken = new CSOAPCommon.WindowsUpdateTicketsToken()
+                        WindowsUpdateTicketsToken = new WindowsUpdateTicketsToken()
                         {
                             Id = "ClientMSA"
                         }
                     }
                 },
-                Body = new CSOAPCommon.Body()
+                Body = new Body()
             };
 
             if (!string.IsNullOrEmpty(authorizationToken))
             {
-                envelope.Header.Security.WindowsUpdateTicketsToken.TicketType = new CSOAPCommon.TicketType[]
-                {
+                envelope.Header.Security.WindowsUpdateTicketsToken.TicketType =
+                [
                     new()
                     {
                         Name = "MSA",
@@ -133,7 +143,7 @@ namespace UnifiedUpdatePlatform.Services.WindowsUpdate
                         Version = "1.0",
                         Policy = "MBI_SSL"
                     }
-                };
+                ];
             }
             else
             {
@@ -143,14 +153,14 @@ namespace UnifiedUpdatePlatform.Services.WindowsUpdate
             return envelope;
         }
 
-        private static string SerializeSOAPEnvelope(CSOAPCommon.Envelope envelope)
+        private static string SerializeSOAPEnvelope(Envelope envelope)
         {
             if (envelope == null)
             {
                 return string.Empty;
             }
 
-            XmlSerializer xmlSerializer = new(typeof(CSOAPCommon.Envelope));
+            XmlSerializer xmlSerializer = new(typeof(Envelope));
 
             XmlSerializerNamespaces ns = new();
             ns.Add("s", "http://www.w3.org/2003/05/soap-envelope");
@@ -162,20 +172,20 @@ namespace UnifiedUpdatePlatform.Services.WindowsUpdate
             return stringWriter.ToString().Replace("<?xml version=\"1.0\" encoding=\"utf-16\"?>\r\n", "").Replace("<?xml version=\"1.0\" encoding=\"utf-16\"?>\n", "");
         }
 
-        private static CSOAPCommon.Envelope DeserializeSOAPEnvelope(string message)
+        private static Envelope DeserializeSOAPEnvelope(string message)
         {
             if (message == null)
             {
                 return null;
             }
 
-            XmlSerializer xmlSerializer = new(typeof(CSOAPCommon.Envelope));
+            XmlSerializer xmlSerializer = new(typeof(Envelope));
 
             using StringReader stringReader = new(message);
-            return (CSOAPCommon.Envelope)xmlSerializer.Deserialize(stringReader);
+            return (Envelope)xmlSerializer.Deserialize(stringReader);
         }
 
-        private static CExtendedUpdateInfoXml.Xml DeserializeInfoXML(string xml)
+        private static Xml DeserializeInfoXML(string xml)
         {
             if (xml == null)
             {
@@ -184,28 +194,28 @@ namespace UnifiedUpdatePlatform.Services.WindowsUpdate
 
             string message = "<Xml>" + xml + "</Xml>";
 
-            XmlSerializer xmlSerializer = new(typeof(CExtendedUpdateInfoXml.Xml));
+            XmlSerializer xmlSerializer = new(typeof(Xml));
 
             using StringReader stringReader = new(message);
-            return (CExtendedUpdateInfoXml.Xml)xmlSerializer.Deserialize(stringReader);
+            return (Xml)xmlSerializer.Deserialize(stringReader);
         }
 
-        private static CAppxMetadataJSON.AppxMetadataJson DeserializeAppxJSON(string json)
+        private static AppxMetadataJson DeserializeAppxJSON(string json)
         {
-            return JsonSerializer.Deserialize<CAppxMetadataJSON.AppxMetadataJson>(json);
+            return JsonSerializer.Deserialize<AppxMetadataJson>(json);
         }
 
         #endregion Data manipulation
 
         #region WU functions
 
-        private static async Task<(CGetCookieResponse.GetCookieResponse, string)> GetCookie()
+        private static async Task<(GetCookieResponse, string)> GetCookie()
         {
-            CSOAPCommon.Envelope envelope = GetEnveloppe("GetCookie", null, false);
+            Envelope envelope = GetEnveloppe("GetCookie", null, false);
 
-            envelope.Body.GetCookie = new CGetCookieRequest.GetCookie()
+            envelope.Body.GetCookie = new GetCookie()
             {
-                OldCookie = new CGetCookieRequest.OldCookie()
+                OldCookie = new OldCookie()
                 {
                     Expiration = Constants.OldCookieExpiration
                 },
@@ -218,30 +228,30 @@ namespace UnifiedUpdatePlatform.Services.WindowsUpdate
 
             string response = await PostToWindowsUpdateAsync("GetCookie", message, false);
 
-            CSOAPCommon.Envelope renvelope = DeserializeSOAPEnvelope(response);
+            Envelope renvelope = DeserializeSOAPEnvelope(response);
 
             return (renvelope.Body.GetCookieResponse, response);
         }
 
-        private static async Task<(CGetExtendedUpdateInfoResponse.GetExtendedUpdateInfoResponse, string)> GetExtendedUpdateInfo(
-            CSOAPCommon.Cookie cookie,
+        private static async Task<(GetExtendedUpdateInfoResponse, string)> GetExtendedUpdateInfo(
+            Models.FE3.SOAP.Common.Cookie cookie,
             string token,
             string[] revisionId,
             CTAC ctac)
         {
-            CSOAPCommon.Envelope envelope = GetEnveloppe("GetExtendedUpdateInfo", token, false);
+            Envelope envelope = GetEnveloppe("GetExtendedUpdateInfo", token, false);
 
-            envelope.Body.GetExtendedUpdateInfo = new CGetExtendedUpdateInfoRequest.GetExtendedUpdateInfo()
+            envelope.Body.GetExtendedUpdateInfo = new GetExtendedUpdateInfo()
             {
                 Cookie = cookie,
-                RevisionIDs = new CGetExtendedUpdateInfoRequest.RevisionIDs()
+                RevisionIDs = new RevisionIDs()
                 {
                     Int = revisionId
                 },
-                InfoTypes = new CSOAPCommon.InfoTypes()
+                InfoTypes = new InfoTypes()
                 {
-                    XmlUpdateFragmentType = new string[]
-                    {
+                    XmlUpdateFragmentType =
+                    [
                         "FileUrl",
                         "FileDecryption",
                         "Extended",
@@ -250,11 +260,11 @@ namespace UnifiedUpdatePlatform.Services.WindowsUpdate
                         "Published",
                         "Core",
                         "VerificationRule"
-                    }
+                    ]
                 },
-                Locales = new CSOAPCommon.Locales()
+                Locales = new Locales()
                 {
-                    String = new string[] { "en-US", "en" }
+                    String = ["en-US", "en"]
                 },
                 DeviceAttributes = ctac.DeviceAttributes
             };
@@ -263,40 +273,40 @@ namespace UnifiedUpdatePlatform.Services.WindowsUpdate
 
             string response = await PostToWindowsUpdateAsync("GetCookie", message, false);
 
-            CSOAPCommon.Envelope renvelope = DeserializeSOAPEnvelope(response);
+            Envelope renvelope = DeserializeSOAPEnvelope(response);
 
             return (renvelope.Body.GetExtendedUpdateInfoResponse, response);
         }
 
-        public static async Task<(CGetExtendedUpdateInfo2Response.GetExtendedUpdateInfo2Response, string)> GetExtendedUpdateInfo2(
+        public static async Task<(GetExtendedUpdateInfo2Response, string)> GetExtendedUpdateInfo2(
             string token,
             string UpdateID,
             string RevisionNumber,
             CTAC ctac
             )
         {
-            CSOAPCommon.Envelope envelope = GetEnveloppe("GetExtendedUpdateInfo2", token, true);
+            Envelope envelope = GetEnveloppe("GetExtendedUpdateInfo2", token, true);
 
-            envelope.Body.GetExtendedUpdateInfo2 = new CGetExtendedUpdateInfo2Request.GetExtendedUpdateInfo2()
+            envelope.Body.GetExtendedUpdateInfo2 = new GetExtendedUpdateInfo2()
             {
-                UpdateIDs = new CGetExtendedUpdateInfo2Request.UpdateIDs()
+                UpdateIDs = new UpdateIDs()
                 {
-                    UpdateIdentity = new CGetExtendedUpdateInfo2Request.UpdateIdentity()
+                    UpdateIdentity = new Models.FE3.SOAP.GetExtendedUpdateInfo2.Request.UpdateIdentity()
                     {
                         UpdateID = UpdateID,
                         RevisionNumber = RevisionNumber
                     }
                 },
-                InfoTypes = new CSOAPCommon.InfoTypes()
+                InfoTypes = new InfoTypes()
                 {
-                    XmlUpdateFragmentType = new string[]
-                    {
+                    XmlUpdateFragmentType =
+                    [
                         "FileUrl",
                         "FileDecryption",
                         "EsrpDecryptionInformation",
                         "PiecesHashUrl",
                         "BlockMapUrl"
-                    }
+                    ]
                 },
                 DeviceAttributes = ctac.DeviceAttributes
             };
@@ -305,13 +315,13 @@ namespace UnifiedUpdatePlatform.Services.WindowsUpdate
 
             string response = await PostToWindowsUpdateAsync("GetExtendedUpdateInfo2", message, true);
 
-            CSOAPCommon.Envelope renvelope = DeserializeSOAPEnvelope(response);
+            Envelope renvelope = DeserializeSOAPEnvelope(response);
 
             return (renvelope.Body.GetExtendedUpdateInfo2Response, response);
         }
 
-        private static async Task<(CSyncUpdatesResponse.SyncUpdatesResponse, string)> SyncUpdates(
-            CSOAPCommon.Cookie cookie,
+        private static async Task<(SyncUpdatesResponse, string)> SyncUpdates(
+            Models.FE3.SOAP.Common.Cookie cookie,
             string token,
             IEnumerable<string> InstalledNonLeafUpdateIDs,
             IEnumerable<string> OtherCachedUpdateIDs,
@@ -323,58 +333,58 @@ namespace UnifiedUpdatePlatform.Services.WindowsUpdate
 
             if (InstalledNonLeafUpdateIDs != null)
             {
-                List<string> tmplist = _InstalledNonLeafUpdateIDs.ToList();
+                List<string> tmplist = [.. _InstalledNonLeafUpdateIDs];
                 tmplist.AddRange(InstalledNonLeafUpdateIDs);
-                _InstalledNonLeafUpdateIDs = tmplist.ToArray();
+                _InstalledNonLeafUpdateIDs = [.. tmplist];
             }
 
-            CSOAPCommon.Envelope envelope = GetEnveloppe("SyncUpdates", token, false);
+            Envelope envelope = GetEnveloppe("SyncUpdates", token, false);
 
-            envelope.Body.SyncUpdates = new CSyncUpdatesRequest.SyncUpdates()
+            envelope.Body.SyncUpdates = new SyncUpdates()
             {
                 Cookie = cookie,
-                Parameters = new CSyncUpdatesRequest.Parameters()
+                Parameters = new Parameters()
                 {
                     ExpressQuery = "false",
-                    InstalledNonLeafUpdateIDs = new CSyncUpdatesRequest.InstalledNonLeafUpdateIDs()
+                    InstalledNonLeafUpdateIDs = new InstalledNonLeafUpdateIDs()
                     {
                         Int = _InstalledNonLeafUpdateIDs
                     },
-                    OtherCachedUpdateIDs = new CSyncUpdatesRequest.OtherCachedUpdateIDs()
+                    OtherCachedUpdateIDs = new OtherCachedUpdateIDs()
                     {
-                        Int = OtherCachedUpdateIDs != null ? OtherCachedUpdateIDs.ToArray() : Array.Empty<string>()
+                        Int = OtherCachedUpdateIDs != null ? OtherCachedUpdateIDs.ToArray() : []
                     },
                     SkipSoftwareSync = "false",
                     NeedTwoGroupOutOfScopeUpdates = "true",
-                    FilterAppCategoryIds = CategoryIdentifiers != null && CategoryIdentifiers.Length != 0 ? new CSyncUpdatesRequest.FilterAppCategoryIds()
+                    FilterAppCategoryIds = CategoryIdentifiers != null && CategoryIdentifiers.Length != 0 ? new FilterAppCategoryIds()
                     {
-                        CategoryIdentifier = new CSyncUpdatesRequest.CategoryIdentifier()
+                        CategoryIdentifier = new CategoryIdentifier()
                         {
-                            Id = CategoryIdentifiers ?? Array.Empty<string>()
+                            Id = CategoryIdentifiers ?? []
                         }
                     } : null,
                     AlsoPerformRegularSync = "false",
                     ComputerSpec = "",
-                    ExtendedUpdateInfoParameters = new CSyncUpdatesRequest.ExtendedUpdateInfoParameters()
+                    ExtendedUpdateInfoParameters = new ExtendedUpdateInfoParameters()
                     {
-                        XmlUpdateFragmentTypes = new CSyncUpdatesRequest.XmlUpdateFragmentTypes()
+                        XmlUpdateFragmentTypes = new XmlUpdateFragmentTypes()
                         {
-                            XmlUpdateFragmentType = new string[]
-                            {
+                            XmlUpdateFragmentType =
+                            [
                                 "Extended",
                                 "LocalizedProperties",
                                 "Eula",
                                 "Published",
                                 "Core"
-                            }
+                            ]
                         },
-                        Locales = new CSOAPCommon.Locales()
+                        Locales = new Locales()
                         {
-                            String = new string[] { "en-US", "en" }
+                            String = ["en-US", "en"]
                         }
                     },
                     ClientPreferredLanguages = "",
-                    ProductsParameters = new CSyncUpdatesRequest.ProductsParameters()
+                    ProductsParameters = new ProductsParameters()
                     {
                         SyncCurrentVersionOnly = ctac.SyncCurrentVersionOnly ? "true" : "false",
                         DeviceAttributes = ctac.DeviceAttributes,
@@ -388,9 +398,9 @@ namespace UnifiedUpdatePlatform.Services.WindowsUpdate
 
             string response = await PostToWindowsUpdateAsync("SyncUpdates", message, false);
 
-            CSOAPCommon.Envelope renvelope = DeserializeSOAPEnvelope(response);
+            Envelope responseEnvelope = DeserializeSOAPEnvelope(response);
 
-            return (renvelope.Body.SyncUpdatesResponse, response);
+            return (responseEnvelope.Body.SyncUpdatesResponse, response);
         }
 
         #endregion WU functions
@@ -399,12 +409,12 @@ namespace UnifiedUpdatePlatform.Services.WindowsUpdate
 
         public static async Task<IEnumerable<UpdateData>> GetUpdates(string[] categoryIds, CTAC ctac, string token, FileExchangeV3UpdateFilter filter = FileExchangeV3UpdateFilter.Application) // Or ProductRelease
         {
-            (CGetCookieResponse.GetCookieResponse cookie, string cookieresp) = await GetCookie();
+            (GetCookieResponse cookie, string cookieresp) = await GetCookie();
 
-            HashSet<string> InstalledNonLeafUpdateIDs = new();
-            HashSet<string> OtherCachedUpdateIDs = new();
+            HashSet<string> InstalledNonLeafUpdateIDs = [];
+            HashSet<string> OtherCachedUpdateIDs = [];
 
-            HashSet<(CSyncUpdatesResponse.SyncUpdatesResponse, string)> responses = new();
+            HashSet<(SyncUpdatesResponse, string)> responses = [];
 
             //
             // Scan all updates
@@ -413,7 +423,7 @@ namespace UnifiedUpdatePlatform.Services.WindowsUpdate
             //
             while (true)
             {
-                (CSyncUpdatesResponse.SyncUpdatesResponse, string) result = await SyncUpdates(cookie.GetCookieResult, token, InstalledNonLeafUpdateIDs, OtherCachedUpdateIDs, categoryIds ?? Array.Empty<string>(), ctac);
+                (SyncUpdatesResponse, string) result = await SyncUpdates(cookie.GetCookieResult, token, InstalledNonLeafUpdateIDs, OtherCachedUpdateIDs, categoryIds ?? [], ctac);
 
                 // Refresh the cookie
                 cookie.GetCookieResult.EncryptedData = result.Item1.SyncUpdatesResult.NewCookie.EncryptedData;
@@ -424,7 +434,7 @@ namespace UnifiedUpdatePlatform.Services.WindowsUpdate
                     break;
                 }
 
-                foreach (CSOAPCommon.Update update in result.Item1.SyncUpdatesResult.ExtendedUpdateInfo.Updates.Update)
+                foreach (Update update in result.Item1.SyncUpdatesResult.ExtendedUpdateInfo.Updates.Update)
                 {
                     _ = InstalledNonLeafUpdateIDs.Add(update.ID);
                     _ = OtherCachedUpdateIDs.Add(update.ID);
@@ -433,18 +443,18 @@ namespace UnifiedUpdatePlatform.Services.WindowsUpdate
                 _ = responses.Add(result);
             }
 
-            HashSet<UpdateData> updateDatas = new();
+            HashSet<UpdateData> updateDatas = [];
 
-            foreach ((CSyncUpdatesResponse.SyncUpdatesResponse, string) response in responses)
+            foreach ((SyncUpdatesResponse, string) response in responses)
             {
-                foreach (CSOAPCommon.Update update in response.Item1.SyncUpdatesResult.ExtendedUpdateInfo.Updates.Update)
+                foreach (Update update in response.Item1.SyncUpdatesResult.ExtendedUpdateInfo.Updates.Update)
                 {
                     UpdateData data = new()
                     {
                         Update = update
                     };
 
-                    foreach (CSyncUpdatesResponse.UpdateInfo updateInfo in response.Item1.SyncUpdatesResult.NewUpdates.UpdateInfo)
+                    foreach (UpdateInfo updateInfo in response.Item1.SyncUpdatesResult.NewUpdates.UpdateInfo)
                     {
                         if (ulong.Parse(update.ID) == ulong.Parse(updateInfo.ID))
                         {
@@ -453,7 +463,7 @@ namespace UnifiedUpdatePlatform.Services.WindowsUpdate
                         }
                     }
 
-                    CExtendedUpdateInfoXml.Xml updateXml = DeserializeInfoXML(data.Update.Xml + data.UpdateInfo.Xml);
+                    Xml updateXml = DeserializeInfoXML(data.Update.Xml + data.UpdateInfo.Xml);
                     data.Xml = updateXml;
 
                     if (data.Xml.ApplicabilityRules?.Metadata?.AppxPackageMetadata?.AppxMetadata != null)
@@ -466,7 +476,7 @@ namespace UnifiedUpdatePlatform.Services.WindowsUpdate
                         UpdateData updateData = updateDatas.First(x => x.Update.ID == update.ID);
                         if (data.Xml.LocalizedProperties == null)
                         {
-                            CExtendedUpdateInfoXml.Xml backup = updateData.Xml;
+                            Xml backup = updateData.Xml;
                             updateData.Xml = data.Xml;
 
                             updateData.Xml.LocalizedProperties = backup.LocalizedProperties;
@@ -486,7 +496,7 @@ namespace UnifiedUpdatePlatform.Services.WindowsUpdate
                 }
             }
 
-            HashSet<UpdateData> relevantUpdateDatas = new();
+            HashSet<UpdateData> relevantUpdateDatas = [];
 
             foreach (UpdateData updateData in updateDatas)
             {
@@ -509,16 +519,16 @@ namespace UnifiedUpdatePlatform.Services.WindowsUpdate
 
         public static async Task<FileExchangeV3FileDownloadInformation> GetFileUrl(UpdateData updateData, string fileDigest, string token = null)
         {
-            (CGetExtendedUpdateInfo2Response.GetExtendedUpdateInfo2Response, string) result = await GetExtendedUpdateInfo2(token, updateData.Xml.UpdateIdentity.UpdateID, updateData.Xml.UpdateIdentity.RevisionNumber, updateData.CTAC);
+            (GetExtendedUpdateInfo2Response, string) result = await GetExtendedUpdateInfo2(token, updateData.Xml.UpdateIdentity.UpdateID, updateData.Xml.UpdateIdentity.RevisionNumber, updateData.CTAC);
 
-            if (updateData.Xml?.Files?.File?.FirstOrDefault(x => x.AdditionalDigest?.Text == fileDigest) is CExtendedUpdateInfoXml.File file)
+            if (updateData.Xml?.Files?.File?.FirstOrDefault(x => x.AdditionalDigest?.Text == fileDigest) is Models.FE3.XML.ExtendedUpdateInfo.File file)
             {
                 fileDigest = file.Digest;
             }
 
             if (result.Item1.GetExtendedUpdateInfo2Result.FileLocations != null)
             {
-                foreach (CGetExtendedUpdateInfo2Response.FileLocation fileLocation in result.Item1.GetExtendedUpdateInfo2Result.FileLocations.FileLocation)
+                foreach (FileLocation fileLocation in result.Item1.GetExtendedUpdateInfo2Result.FileLocations.FileLocation)
                 {
                     if (fileLocation.FileDigest == fileDigest)
                     {
@@ -532,7 +542,7 @@ namespace UnifiedUpdatePlatform.Services.WindowsUpdate
 
         public static async Task<IEnumerable<FileExchangeV3FileDownloadInformation>> GetFileUrls(UpdateData updateData, string token = null)
         {
-            (CGetExtendedUpdateInfo2Response.GetExtendedUpdateInfo2Response, string) result = await GetExtendedUpdateInfo2(token, updateData.Xml.UpdateIdentity.UpdateID, updateData.Xml.UpdateIdentity.RevisionNumber, updateData.CTAC);
+            (GetExtendedUpdateInfo2Response, string) result = await GetExtendedUpdateInfo2(token, updateData.Xml.UpdateIdentity.UpdateID, updateData.Xml.UpdateIdentity.RevisionNumber, updateData.CTAC);
 
             updateData.GEI2Response = result.Item2;
 
@@ -540,137 +550,5 @@ namespace UnifiedUpdatePlatform.Services.WindowsUpdate
         }
 
         #endregion File url specific functions
-    }
-
-    public enum FileExchangeV3UpdateFilter
-    {
-        ProductRelease,
-        Application,
-        OSFlight
-    }
-
-    public class FileExchangeV3FileDownloadInformation
-    {
-        public string DownloadUrl
-        {
-            get;
-        }
-
-        public bool IsEncrypted => EsrpDecryptionInformation != null;
-
-        public DateTime ExpirationDate
-        {
-            get
-            {
-                DateTime dateTime = DateTime.MaxValue;
-                try
-                {
-                    long value = long.Parse(DownloadUrl.Split("P1=")[1].Split("&")[0]);
-                    dateTime = DateTimeOffset.FromUnixTimeSeconds(value).ToLocalTime().DateTime;
-                }
-                catch { }
-                return dateTime;
-            }
-        }
-
-        public bool IsDownloadable => ExpirationDate > DateTime.Now;
-
-        public TimeSpan TimeLeft => IsDownloadable ? DateTime.Now - ExpirationDate : new TimeSpan(0);
-
-        public EsrpDecryptionInformation EsrpDecryptionInformation { get; set; } = null;
-
-        public string Digest
-        {
-            get;
-        }
-
-        internal FileExchangeV3FileDownloadInformation(CGetExtendedUpdateInfo2Response.FileLocation fileLocation)
-        {
-            DownloadUrl = fileLocation.Url;
-            if (!string.IsNullOrEmpty(fileLocation.EsrpDecryptionInformation))
-            {
-                EsrpDecryptionInformation = EsrpDecryptionInformation.DeserializeFromJson(fileLocation.EsrpDecryptionInformation);
-            }
-            Digest = fileLocation.FileDigest;
-        }
-
-        public override bool Equals(object obj)
-        {
-            return obj is FileExchangeV3FileDownloadInformation info && info.Digest == Digest;
-        }
-
-        public override int GetHashCode()
-        {
-            return Digest.GetHashCode();
-        }
-
-        public async Task<bool> DecryptAsync(string InputFile, string OutputFile)
-        {
-            if (!IsEncrypted)
-            {
-                return false;
-            }
-
-            try
-            {
-                using EsrpDecryptor esrp = new(EsrpDecryptionInformation);
-                await esrp.DecryptFileAsync(InputFile, OutputFile);
-                return true;
-            }
-            catch { }
-
-            return false;
-        }
-    }
-
-    public class UpdateData
-    {
-        [JsonPropertyName("UpdateInfo")]
-        public CSyncUpdatesResponse.UpdateInfo UpdateInfo
-        {
-            get; set;
-        }
-
-        [JsonPropertyName("Update")]
-        public CSOAPCommon.Update Update
-        {
-            get; set;
-        }
-
-        [JsonPropertyName("Xml")]
-        public CExtendedUpdateInfoXml.Xml Xml
-        {
-            get; set;
-        }
-
-        [JsonPropertyName("AppxMetadata")]
-        public CAppxMetadataJSON.AppxMetadataJson AppxMetadata
-        {
-            get; set;
-        }
-
-        [JsonPropertyName("CTAC")]
-        public CTAC CTAC
-        {
-            get; set;
-        }
-
-        [JsonPropertyName("SyncUpdatesResponse")]
-        public string SyncUpdatesResponse
-        {
-            get; set;
-        }
-
-        [JsonPropertyName("GEI2Response")]
-        public string GEI2Response
-        {
-            get; set;
-        }
-
-        [JsonPropertyName("CompDBs")]
-        public HashSet<CompDB> CompDBs
-        {
-            get; set;
-        }
     }
 }

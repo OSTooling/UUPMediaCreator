@@ -26,7 +26,7 @@ namespace Microsoft.Dism
                 appPath,
                 dependencyPackages,
                 optionalPackages: null,
-                licensePaths: string.IsNullOrEmpty(licensePath) ? null : new List<string> { licensePath! },
+                licensePaths: string.IsNullOrEmpty(licensePath) ? null : [licensePath!],
                 customDataPath: customDataPath,
                 regions: "all",
                 stubPackageOption: stubPackageOption);
@@ -48,7 +48,7 @@ namespace Microsoft.Dism
                 appPath,
                 dependencyPackages,
                 optionalPackages: null,
-                licensePaths: string.IsNullOrEmpty(licensePath) ? null : new List<string> { licensePath! },
+                licensePaths: string.IsNullOrEmpty(licensePath) ? null : [licensePath!],
                 customDataPath: customDataPath,
                 regions: null);
         }
@@ -94,11 +94,11 @@ namespace Microsoft.Dism
             int hresult = NativeMethods._DismAddProvisionedAppxPackage(
                 session,
                 appPath,
-                dependencyPackages?.ToArray() ?? new string[0],
+                dependencyPackages?.ToArray() ?? [],
                 (uint)(dependencyPackages?.Count ?? 0),
-                optionalPackages?.ToArray() ?? new string[0],
+                optionalPackages?.ToArray() ?? [],
                 (uint)(optionalPackages?.Count ?? 0),
-                licensePaths?.ToArray() ?? new string[0],
+                licensePaths?.ToArray() ?? [],
                 (uint)(licensePaths?.Count ?? 0),
                 SkipLicense: licensePaths == null || licensePaths.Count == 0,
                 customDataPath,

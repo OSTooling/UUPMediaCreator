@@ -1,0 +1,186 @@
+[
+  {
+    "outputFolder": "\\1000_CLS",
+    "guid": null,
+    "filteredIds": [],
+    "excludedIds": [],
+    "Manufacturer": "Qualcomm",
+    "Family": "SDM1000",
+    "Product": "CLS",
+    "Sku": "6"
+  },
+  {
+    "outputFolder": "\\7180_CLS",
+    "guid": null,
+    "filteredIds": [],
+    "excludedIds": [
+      1,
+      9,
+      10
+    ],
+    "Manufacturer": "Qualcomm",
+    "Family": "SC7180",
+    "Product": "CLS",
+    "Sku": "6"
+  },
+  {
+    "outputFolder": "\\7280_CLS",
+    "guid": null,
+    "filteredIds": [],
+    "excludedIds": [],
+    "Manufacturer": "Qualcomm",
+    "Family": "SC_KODIAK",
+    "Product": "CLS",
+    "Sku": "6"
+  },
+  {
+    "outputFolder": "\\7280_WINDOWS_CLS",
+    "guid": null,
+    "filteredIds": [],
+    "excludedIds": [],
+    "Manufacturer": "Qualcomm",
+    "Family": "SC_KODIAK_WINDOWS",
+    "Product": "CLS",
+    "Sku": "6"
+  },
+  {
+    "outputFolder": "\\8180_CLS",
+    "guid": null,
+    "filteredIds": [],
+    "excludedIds": [],
+    "Manufacturer": "Qualcomm",
+    "Family": "SC8180X",
+    "Product": "CLS",
+    "Sku": "6"
+  },
+  {
+    "outputFolder": "\\8280_QRD",
+    "guid": null,
+    "filteredIds": [],
+    "excludedIds": [],
+    "Manufacturer": "Qualcomm",
+    "Family": "SCP_MAKENA",
+    "Product": "QRD",
+    "Sku": "6"
+  },
+  {
+    "outputFolder": "\\8380_CRD",
+    "guid": null,
+    "filteredIds": [],
+    "excludedIds": [],
+    "Manufacturer": "Qualcomm",
+    "Family": "SCP_HAMOA",
+    "Product": "CRD",
+    "Sku": "6"
+  },
+  {
+    "outputFolder": "\\8380_RUN",
+    "guid": null,
+    "filteredIds": [],
+    "excludedIds": [],
+    "Manufacturer": "Qualcomm",
+    "Family": "SCP_HAMOA",
+    "Product": "Snapdragon-Devkit",
+    "Sku": "6"
+  },
+  {
+    "outputFolder": "\\8380PA_CRD",
+    "guid": null,
+    "filteredIds": [],
+    "excludedIds": [],
+    "Manufacturer": "Qualcomm",
+    "Family": "SCP_PURWA",
+    "Product": "CRD",
+    "Sku": "6"
+  },
+  {
+    "outputFolder": "\\Surface\\8180_CAM",
+    "guid": null,
+    "filteredIds": [],
+    "excludedIds": [],
+    "Manufacturer": "Microsoft Corporation",
+    "Family": "Surface",
+    "Product": "Surface Pro X",
+    "Sku": "Surface_Pro_X_1876"
+  },
+  {
+    "outputFolder": "\\Surface\\8180_CAR",
+    "guid": null,
+    "filteredIds": [],
+    "excludedIds": [],
+    "Manufacturer": "Microsoft Corporation",
+    "Family": "Surface",
+    "Product": "Surface Pro X",
+    "Sku": "Surface_Pro_X_H_1876"
+  },
+  {
+    "outputFolder": "\\Surface\\8180_CAS",
+    "guid": null,
+    "filteredIds": [],
+    "excludedIds": [],
+    "Manufacturer": "Microsoft Corporation",
+    "Family": "Surface",
+    "Product": "Surface Pro X",
+    "Sku": "Surface_Pro_X_2010"
+  },
+  {
+    "outputFolder": "\\Surface\\8280_ARC_1996",
+    "guid": null,
+    "filteredIds": [],
+    "excludedIds": [],
+    "Manufacturer": "Microsoft Corporation",
+    "Family": "Surface",
+    "Product": "Surface Pro 9",
+    "Sku": "Surface_Pro_9_With_5G_1996"
+  },
+  {
+    "outputFolder": "\\Surface\\8280_ARC_1997",
+    "guid": null,
+    "filteredIds": [],
+    "excludedIds": [],
+    "Manufacturer": "Microsoft Corporation",
+    "Family": "Surface",
+    "Product": "Surface Pro 9",
+    "Sku": "Surface_Pro_9_With_5G_1997"
+  },
+  {
+    "outputFolder": "\\Surface\\8280_BLK",
+    "guid": null,
+    "filteredIds": [],
+    "excludedIds": [],
+    "Manufacturer": "Microsoft Corporation",
+    "Family": "Surface",
+    "Product": "Windows Dev Kit 2023",
+    "Sku": "2043"
+  },
+  {
+    "outputFolder": "\\Surface\\8380_ROM_2036",
+    "guid": null,
+    "filteredIds": [],
+    "excludedIds": [],
+    "Manufacturer": "Microsoft Corporation",
+    "Family": "Surface",
+    "Product": "Microsoft Surface Laptop, 7th Edition",
+    "Sku": "Surface_Laptop_7th_Edition_2036"
+  },
+  {
+    "outputFolder": "\\Surface\\8380_ROM_2037",
+    "guid": null,
+    "filteredIds": [],
+    "excludedIds": [],
+    "Manufacturer": "Microsoft Corporation",
+    "Family": "Surface",
+    "Product": "Microsoft Surface Laptop, 7th Edition",
+    "Sku": "Surface_Laptop_7th_Edition_2037"
+  },
+  {
+    "outputFolder": "\\Surface\\8380_DEN",
+    "guid": null,
+    "filteredIds": [],
+    "excludedIds": [],
+    "Manufacturer": "Microsoft Corporation",
+    "Family": "Surface",
+    "Product": "Microsoft Surface Pro, 11th Edition",
+    "Sku": "Surface_Pro_11th_Edition_2076"
+  }
+]

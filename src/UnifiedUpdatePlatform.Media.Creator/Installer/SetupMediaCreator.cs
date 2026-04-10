@@ -35,7 +35,7 @@ namespace UnifiedUpdatePlatform.Media.Creator.Installer
             string OutputMediaPath,
             string OutputWindowsREPath,
             Common.Messaging.Common.CompressionType CompressionType,
-            IEnumerable<CompDB> CompositionDatabases,
+            IEnumerable<BaseManifest> CompositionDatabases,
             TempManager tempManager,
             ProgressCallback progressCallback = null)
         {

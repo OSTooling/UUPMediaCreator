@@ -23,35 +23,35 @@ using System.Xml.Serialization;
 
 namespace UnifiedUpdatePlatform.Services.Composition.Database
 {
-    [XmlRoot(ElementName = "PayloadItem", Namespace = "http://schemas.microsoft.com/embedded/2004/10/ImageUpdate")]
+    [XmlRoot(ElementName = "PayloadItem")]
     public class PayloadItem
     {
-        [XmlAttribute(AttributeName = "PayloadHash", Namespace = "http://schemas.microsoft.com/embedded/2004/10/ImageUpdate")]
+        [XmlAttribute(AttributeName = "PayloadHash")]
         public string SourceHash
         {
             get; set;
         }
-        [XmlAttribute(AttributeName = "PayloadSize", Namespace = "http://schemas.microsoft.com/embedded/2004/10/ImageUpdate")]
+        [XmlAttribute(AttributeName = "PayloadSize")]
         public string PayloadSize
         {
             get; set;
         }
-        [XmlAttribute(AttributeName = "Path", Namespace = "http://schemas.microsoft.com/embedded/2004/10/ImageUpdate")]
+        [XmlAttribute(AttributeName = "Path")]
         public string SourceName
         {
             get; set;
         }
-        [XmlAttribute(AttributeName = "PayloadType", Namespace = "http://schemas.microsoft.com/embedded/2004/10/ImageUpdate")]
+        [XmlAttribute(AttributeName = "PayloadType")]
         public string PayloadType
         {
             get; set;
         }
-        [XmlAttribute(AttributeName = "AltSourceName", Namespace = "http://schemas.microsoft.com/embedded/2004/10/ImageUpdate")]
+        [XmlAttribute(AttributeName = "AltSourceName")]
         public string AltSourceName
         {
             get; set;
         }
-        [XmlAttribute(AttributeName = "AltSourceHash", Namespace = "http://schemas.microsoft.com/embedded/2004/10/ImageUpdate")]
+        [XmlAttribute(AttributeName = "AltSourceHash")]
         public string AltSourceHash
         {
             get; set;

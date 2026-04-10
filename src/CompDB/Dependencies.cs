@@ -24,10 +24,10 @@ using System.Xml.Serialization;
 
 namespace UnifiedUpdatePlatform.Services.Composition.Database
 {
-    [XmlRoot(ElementName = "Dependencies", Namespace = "http://schemas.microsoft.com/embedded/2004/10/ImageUpdate")]
+    [XmlRoot(ElementName = "Dependencies")]
     public class Dependencies
     {
-        [XmlElement(ElementName = "Feature", Namespace = "http://schemas.microsoft.com/embedded/2004/10/ImageUpdate")]
+        [XmlElement(ElementName = "Feature")]
         public List<Feature> Feature
         {
             get; set;

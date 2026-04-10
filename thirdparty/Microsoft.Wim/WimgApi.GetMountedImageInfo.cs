@@ -49,7 +49,7 @@ namespace Microsoft.Wim
                 case 0:
 
                     // Return an empty list because there are no images
-                    return new WimMountInfoCollection(new List<WimMountInfo>());
+                    return new WimMountInfoCollection([]);
 
                 case WimgApi.ERROR_INSUFFICIENT_BUFFER:
 
@@ -63,7 +63,7 @@ namespace Microsoft.Wim
             }
 
             // Create a collection of WimMountInfo objects
-            List<WimMountInfo> wimMountInfos = new();
+            List<WimMountInfo> wimMountInfos = [];
 
             // Allocate enough memory for the return array
             IntPtr mountInfoPtr = Marshal.AllocHGlobal((int)returnLength);

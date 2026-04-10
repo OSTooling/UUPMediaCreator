@@ -23,20 +23,20 @@ using System.Xml.Serialization;
 
 namespace UnifiedUpdatePlatform.Services.Composition.Database
 {
-    [XmlRoot(ElementName = "SatelliteInfo", Namespace = "http://schemas.microsoft.com/embedded/2004/10/ImageUpdate")]
+    [XmlRoot(ElementName = "SatelliteInfo")]
     public class SatelliteInfo
     {
-        [XmlElement(ElementName = "RequireInfo", Namespace = "http://schemas.microsoft.com/embedded/2004/10/ImageUpdate")]
+        [XmlElement(ElementName = "RequireInfo")]
         public RequireInfo RequireInfo
         {
             get; set;
         }
-        [XmlElement(ElementName = "ApplyToInfo", Namespace = "http://schemas.microsoft.com/embedded/2004/10/ImageUpdate")]
+        [XmlElement(ElementName = "ApplyToInfo")]
         public ApplyToInfo ApplyToInfo
         {
             get; set;
         }
-        [XmlElement(ElementName = "DeclareInfo", Namespace = "http://schemas.microsoft.com/embedded/2004/10/ImageUpdate")]
+        [XmlElement(ElementName = "DeclareInfo")]
         public DeclareInfo DeclareInfo
         {
             get; set;

@@ -27,101 +27,15 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using UnifiedUpdatePlatform.Services.WindowsUpdate.Targeting;
 
 namespace UnifiedUpdatePlatform.Services.WindowsUpdate
 {
-    public static class StringExtensions
+    public static partial class BuildFetcher
     {
-        public static bool Contains(this string str, string substring,
-                                    StringComparison comp)
-        {
-            if (substring == null)
-            {
-                throw new ArgumentNullException(nameof(substring),
-                                             "substring cannot be null.");
-            }
-            else if (!Enum.IsDefined(typeof(StringComparison), comp))
-            {
-                throw new ArgumentException("comp is not a member of StringComparison",
-                                         nameof(comp));
-            }
-
-            return str.Contains(substring, comp);
-        }
-
-        public static string Replace(this string originalString, string oldValue, string newValue, StringComparison comparisonType)
-        {
-            int startIndex = 0;
-            while (true)
-            {
-                startIndex = originalString.IndexOf(oldValue, startIndex, comparisonType);
-                if (startIndex == -1)
-                {
-                    break;
-                }
-
-                originalString = originalString[..startIndex] + newValue + originalString[(startIndex + oldValue.Length)..];
-
-                startIndex += newValue.Length;
-            }
-
-            return originalString;
-        }
-    }
-
-    public static class BuildFetcher
-    {
-        public class AvailableBuild
-        {
-            public UpdateData UpdateData
-            {
-                get; set;
-            }
-            public string Title
-            {
-                get; set;
-            }
-            public string BuildString
-            {
-                get; set;
-            }
-            public string Description
-            {
-                get; set;
-            }
-            public string Created
-            {
-                get; set;
-            }
-        }
-
-        public class AvailableBuildLanguages
-        {
-            public string Title
-            {
-                get; set;
-            }
-            public string LanguageCode
-            {
-                get; set;
-            }
-            public Uri FlagUri
-            {
-                get; set;
-            }
-        }
-
-        public class AvailableEdition
-        {
-            public string Edition
-            {
-                get; set;
-            }
-        }
-
         public static async Task<AvailableBuild[]> GetAvailableBuildsAsync(MachineType machineType)
         {
-            List<AvailableBuild> availableBuilds = new();
+            List<AvailableBuild> availableBuilds = [];
 
             IEnumerable<UpdateData> updates = await GetUpdates(machineType);
 
@@ -145,7 +59,7 @@ namespace UnifiedUpdatePlatform.Services.WindowsUpdate
                 availableBuilds.Add(availableBuild);
             }
 
-            return availableBuilds.OrderBy(x => x.Title).ToArray();
+            return [.. availableBuilds.OrderBy(x => x.Title)];
         }
 
         public static async Task<AvailableBuildLanguages[]> GetAvailableBuildLanguagesAsync(UpdateData UpdateData)
@@ -159,16 +73,16 @@ namespace UnifiedUpdatePlatform.Services.WindowsUpdate
 
             availableBuildLanguages.Sort((x, y) => x.Title.CompareTo(y.Title));
 
-            return availableBuildLanguages.ToArray();
+            return [.. availableBuildLanguages];
         }
 
         public static async Task<AvailableEdition[]> GetAvailableEditions(UpdateData UpdateData, string languagecode)
         {
-            List<AvailableEdition> availableEditions = new();
+            List<AvailableEdition> availableEditions = [];
 
-            List<CExtendedUpdateInfoXml.File> metadataCabs = new();
+            List<Models.FE3.XML.ExtendedUpdateInfo.File> metadataCabs = [];
 
-            foreach (CExtendedUpdateInfoXml.File file in UpdateData.Xml.Files.File)
+            foreach (Models.FE3.XML.ExtendedUpdateInfo.File file in UpdateData.Xml.Files.File)
             {
                 if (file.PatchingType.Equals("metadata", StringComparison.InvariantCultureIgnoreCase))
                 {
@@ -203,7 +117,7 @@ namespace UnifiedUpdatePlatform.Services.WindowsUpdate
                 availableEditions.Add(new AvailableEdition() { Edition = edition });
             }
 
-            foreach (CExtendedUpdateInfoXml.File metadataCab in metadataCabs)
+            foreach (Models.FE3.XML.ExtendedUpdateInfo.File metadataCab in metadataCabs)
             {
                 FileExchangeV3FileDownloadInformation fileDownloadInfo = await FE3Handler.GetFileUrl(UpdateData, metadataCabs.First().Digest);
                 if (fileDownloadInfo == null)
@@ -271,7 +185,7 @@ namespace UnifiedUpdatePlatform.Services.WindowsUpdate
             availableEditions.Sort((x, y) => x.Edition.CompareTo(y.Edition));
 
         exit:
-            return availableEditions.ToArray();
+            return [.. availableEditions];
         }
 
         private static UpdateData TrimDeltasFromUpdateData(UpdateData update)
@@ -292,9 +206,9 @@ namespace UnifiedUpdatePlatform.Services.WindowsUpdate
                 {
                     IEnumerable<UpdateData> potentialDupes = updates.Where(x => x.Xml.Files.File.Length == update.Xml.Files.File.Length);
 
-                    CExtendedUpdateInfoXml.File metadataCab = null;
+                    Models.FE3.XML.ExtendedUpdateInfo.File metadataCab = null;
 
-                    foreach (CExtendedUpdateInfoXml.File file in update.Xml.Files.File)
+                    foreach (Models.FE3.XML.ExtendedUpdateInfo.File file in update.Xml.Files.File)
                     {
                         if (file.PatchingType.Equals("metadata", StringComparison.InvariantCultureIgnoreCase))
                         {
@@ -312,9 +226,9 @@ namespace UnifiedUpdatePlatform.Services.WindowsUpdate
 
                     foreach (UpdateData potentialDupe in potentialDupes)
                     {
-                        CExtendedUpdateInfoXml.File metadataCab2 = null;
+                        Models.FE3.XML.ExtendedUpdateInfo.File metadataCab2 = null;
 
-                        foreach (CExtendedUpdateInfoXml.File file in potentialDupe.Xml.Files.File)
+                        foreach (Models.FE3.XML.ExtendedUpdateInfo.File file in potentialDupe.Xml.Files.File)
                         {
                             if (file.PatchingType.Equals("metadata", StringComparison.InvariantCultureIgnoreCase))
                             {
@@ -371,11 +285,11 @@ namespace UnifiedUpdatePlatform.Services.WindowsUpdate
 
         private static async Task<IEnumerable<UpdateData>> GetUpdates(MachineType MachineType)
         {
-            HashSet<UpdateData> updates = new();
+            HashSet<UpdateData> updates = [];
 
             CTAC[] ctacs = GetRingCTACs(MachineType, OSSkuId.Professional).Union(GetRingCTACs(MachineType, OSSkuId.PPIPro)).Select(x => x.Key).ToArray();
 
-            List<Task<IEnumerable<UpdateData>>> tasks = new();
+            List<Task<IEnumerable<UpdateData>>> tasks = [];
             foreach (CTAC ctac in ctacs)
             {
                 tasks.Add(GetUpdatesFor(ctac));

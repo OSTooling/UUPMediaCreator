@@ -41,7 +41,7 @@ namespace UnifiedUpdatePlatform.Media.Creator
             XDocument sessDoc = XDocument.Load(Path.Combine(mountDir, @"Windows\servicing\Sessions\Sessions.xml"));
             IEnumerable<XElement> sessions = sessDoc.Element("Sessions").Elements("Session");
             bool dupeFound = false;
-            List<string> pkgsToRemove = new();
+            List<string> pkgsToRemove = [];
             foreach (XElement test in sessions)
             {
                 bool phasesEmpty = !test.Element("Actions").Elements("Phase").First().Elements().Any();
@@ -79,7 +79,7 @@ namespace UnifiedUpdatePlatform.Media.Creator
                 DismApi.AddProvisionedAppxPackage(
                     session,
                     Path.Combine(repositoryPath, workload.AppXPath),
-                    workload.DependenciesPath?.Select(x => Path.Combine(repositoryPath, x)).ToList() ?? new List<string>(),
+                    workload.DependenciesPath?.Select(x => Path.Combine(repositoryPath, x)).ToList() ?? [],
                     string.IsNullOrEmpty(workload.LicensePath) ? null : Path.Combine(licenseFolder, workload.LicensePath),
                     null,
                     string.IsNullOrEmpty(workload.StubPackageOption) ? DismStubPackageOption.None : DismStubPackageOption.InstallStub); // TODO: proper handling
@@ -142,7 +142,7 @@ namespace UnifiedUpdatePlatform.Media.Creator
                     DismApi.AddProvisionedAppxPackage(
                         session,
                         Path.Combine(repositoryPath, workload.AppXPath),
-                        workload.DependenciesPath?.Select(x => Path.Combine(repositoryPath, x)).ToList() ?? new List<string>(),
+                        workload.DependenciesPath?.Select(x => Path.Combine(repositoryPath, x)).ToList() ?? [],
                         string.IsNullOrEmpty(workload.LicensePath) ? null : Path.Combine(licenseFolder, workload.LicensePath),
                         null,
                         string.IsNullOrEmpty(workload.StubPackageOption) ? DismStubPackageOption.None : DismStubPackageOption.InstallStub); // TODO: proper handling
@@ -203,7 +203,7 @@ namespace UnifiedUpdatePlatform.Media.Creator
 
             DismSession session = DismApi.OpenOfflineSession(ospath);
             DismPackageCollection packages = DismApi.GetPackages(session);
-            List<DismPackage> componentsToRemove = new();
+            List<DismPackage> componentsToRemove = [];
 
             //
             // Queue components we don't need according to our hardcoded list for removal

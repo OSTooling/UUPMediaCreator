@@ -45,7 +45,7 @@ namespace UnifiedUpdatePlatform.Media.Creator.BaseEditions
             string InputWindowsREPath,
             string OutputInstallImage,
             Common.Messaging.Common.CompressionType CompressionType,
-            IEnumerable<CompDB> CompositionDatabases,
+            IEnumerable<BaseManifest> CompositionDatabases,
             TempManager tempManager,
             ProgressCallback progressCallback = null)
         {
@@ -178,7 +178,7 @@ namespace UnifiedUpdatePlatform.Media.Creator.BaseEditions
             string OutputInstallImage,
             Common.Messaging.Common.CompressionType CompressionType,
             AppxInstallWorkload[] appxWorkloads,
-            IEnumerable<CompDB> CompositionDatabases,
+            IEnumerable<BaseManifest> CompositionDatabases,
             TempManager tempManager,
             bool keepVhd,
             out string vhdPath,
@@ -355,7 +355,7 @@ namespace UnifiedUpdatePlatform.Media.Creator.BaseEditions
             string UUPPath,
             string LanguageCode,
             string EditionID,
-            IEnumerable<CompDB> CompositionDatabases,
+            IEnumerable<BaseManifest> CompositionDatabases,
             TempManager tempManager,
             ProgressCallback progressCallback = null)
         {
@@ -398,7 +398,7 @@ namespace UnifiedUpdatePlatform.Media.Creator.BaseEditions
                 goto exit;
             }
 
-            Dictionary<string, List<string>> iniSections = new();
+            Dictionary<string, List<string>> iniSections = [];
 
             foreach (string referencePackageToConvert in referencePackagesToConvert)
             {
@@ -413,7 +413,7 @@ namespace UnifiedUpdatePlatform.Media.Creator.BaseEditions
                 {
                     if (!iniSections.ContainsKey(section.SectionName))
                     {
-                        iniSections.Add(section.SectionName, new List<string>());
+                        iniSections.Add(section.SectionName, []);
                     }
 
                     foreach (KeyData element in section.Keys)

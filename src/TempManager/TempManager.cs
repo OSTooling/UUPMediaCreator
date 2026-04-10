@@ -24,7 +24,7 @@ namespace UnifiedUpdatePlatform.Services.Temp
     public class TempManager : IDisposable
     {
         private ulong i = 0;
-        private readonly List<string> tempPaths = new();
+        private readonly List<string> tempPaths = [];
         private bool disposed = false;
         private readonly string Temp = Environment.GetEnvironmentVariable("TEMP") ?? "";
 

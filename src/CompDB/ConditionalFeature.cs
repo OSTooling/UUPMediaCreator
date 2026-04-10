@@ -23,35 +23,35 @@ using System.Xml.Serialization;
 
 namespace UnifiedUpdatePlatform.Services.Composition.Database
 {
-    [XmlRoot(ElementName = "ConditionalFeature", Namespace = "http://schemas.microsoft.com/embedded/2004/10/ImageUpdate")]
+    [XmlRoot(ElementName = "ConditionalFeature")]
     public class ConditionalFeature
     {
-        [XmlElement(ElementName = "Condition", Namespace = "http://schemas.microsoft.com/embedded/2004/10/ImageUpdate")]
+        [XmlElement(ElementName = "Condition")]
         public Condition Condition
         {
             get; set;
         }
-        [XmlAttribute(AttributeName = "InstallAction", Namespace = "http://schemas.microsoft.com/embedded/2004/10/ImageUpdate")]
+        [XmlAttribute(AttributeName = "InstallAction")]
         public string InstallAction
         {
             get; set;
         }
-        [XmlAttribute(AttributeName = "FeatureID", Namespace = "http://schemas.microsoft.com/embedded/2004/10/ImageUpdate")]
+        [XmlAttribute(AttributeName = "FeatureID")]
         public string FeatureID
         {
             get; set;
         }
-        [XmlAttribute(AttributeName = "FMID", Namespace = "http://schemas.microsoft.com/embedded/2004/10/ImageUpdate")]
+        [XmlAttribute(AttributeName = "FMID")]
         public string FMID
         {
             get; set;
         }
-        [XmlElement(ElementName = "ConditionSet", Namespace = "http://schemas.microsoft.com/embedded/2004/10/ImageUpdate")]
+        [XmlElement(ElementName = "ConditionSet")]
         public ConditionSet ConditionSet
         {
             get; set;
         }
-        [XmlAttribute(AttributeName = "UpdateAction", Namespace = "http://schemas.microsoft.com/embedded/2004/10/ImageUpdate")]
+        [XmlAttribute(AttributeName = "UpdateAction")]
         public string UpdateAction
         {
             get; set;

@@ -28,7 +28,7 @@ using System;
 
 namespace UnifiedUpdatePlatform.Services.WindowsUpdate
 {
-    internal class CorrelationVector
+    internal partial class CorrelationVector
     {
         private string baseVector;
         private int currentVector;
@@ -36,32 +36,6 @@ namespace UnifiedUpdatePlatform.Services.WindowsUpdate
         private readonly string base64CharSet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
         private readonly int id0Length = 16;
         private bool isInitialized = false;
-
-        internal enum Settings
-        {
-            SYNCREFRESHINTERVAL,
-            QUEUEDRAININTERVAL,
-            SNAPSHOTSCHEDULEINTERVAL,
-            MAXEVENTSIZEINBYTES,
-            MAXEVENTSPERPOST,
-            SAMPLERATE,
-            MAXFILESSPACE,
-            UPLOADENABLED,
-            PERSISTENCE,
-            LATENCY,
-            HTTPTIMEOUTINTERVAL,
-            THREADSTOUSEWITHEXECUTOR,
-            MAXCORRELATIONVECTORLENGTH,
-            MAXCRITICALCANADDATTEMPTS,
-            MAXRETRYPERIOD,
-            BASERETRYPERIOD,
-            CONSTANTFORRETRYPERIOD,
-            NORMALEVENTMEMORYQUEUESIZE,
-            CLLSETTINGSURL,
-            HOSTSETTINGSETAG,
-            CLLSETTINGSETAG,
-            VORTEXPRODURL
-        }
 
         internal void Init()
         {

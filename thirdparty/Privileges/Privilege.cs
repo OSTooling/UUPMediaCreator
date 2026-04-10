@@ -14,8 +14,8 @@ namespace Privileges
         #region Private static members
 
         private static readonly LocalDataStoreSlot tlsSlot = Thread.AllocateDataSlot();
-        private static readonly HybridDictionary privileges = new();
-        private static readonly HybridDictionary luids = new();
+        private static readonly HybridDictionary privileges = [];
+        private static readonly HybridDictionary luids = [];
         private static readonly ReaderWriterLock privilegeLock = new();
 
         #endregion Private static members

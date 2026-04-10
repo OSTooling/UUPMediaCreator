@@ -1,11 +1,10 @@
-﻿using System.Collections.Generic;
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
 
 namespace Windows.Internal.Flighting
 {
     public class PlatformCTAC : IEquatable<PlatformCTAC>
     {
-        private static ClientAttributes ClientAttributes;
+        private static ClientAttributes? ClientAttributes;
 
         public string JSON
         {
@@ -68,9 +67,9 @@ namespace Windows.Internal.Flighting
         public override int GetHashCode()
         {
             int hashCode = 1698843082;
-            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(JSON);
-            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(UriQuery);
-            hashCode = hashCode * -1521134295 + EqualityComparer<IReadOnlyDictionary<string, int>>.Default.GetHashCode(AttributeErrors);
+            hashCode = (hashCode * -1521134295) + EqualityComparer<string>.Default.GetHashCode(JSON);
+            hashCode = (hashCode * -1521134295) + EqualityComparer<string>.Default.GetHashCode(UriQuery);
+            hashCode = (hashCode * -1521134295) + EqualityComparer<IReadOnlyDictionary<string, int>>.Default.GetHashCode(AttributeErrors);
             return hashCode;
         }
 

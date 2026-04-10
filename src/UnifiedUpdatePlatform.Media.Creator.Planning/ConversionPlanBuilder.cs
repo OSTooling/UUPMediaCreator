@@ -36,8 +36,8 @@ namespace UnifiedUpdatePlatform.Media.Creator.Planning
     public class EditionTarget
     {
         public PlannedEdition PlannedEdition { get; set; } = new PlannedEdition();
-        public List<EditionTarget> NonDestructiveTargets = new();
-        public List<EditionTarget> DestructiveTargets = new();
+        public List<EditionTarget> NonDestructiveTargets = [];
+        public List<EditionTarget> DestructiveTargets = [];
     }
 
     public class PlannedEdition
@@ -47,7 +47,7 @@ namespace UnifiedUpdatePlatform.Media.Creator.Planning
         {
             get; set;
         }
-        public AppxInstallWorkload[] AppXInstallWorkloads { get; set; } = Array.Empty<AppxInstallWorkload>();
+        public AppxInstallWorkload[] AppXInstallWorkloads { get; set; } = [];
     }
 
     public enum AvailabilityType
@@ -155,7 +155,7 @@ namespace UnifiedUpdatePlatform.Media.Creator.Planning
             //
             // Sort editions by name
             //
-            target.NonDestructiveTargets = target.NonDestructiveTargets.OrderBy(x => x.PlannedEdition.EditionName).ToList();
+            target.NonDestructiveTargets = [.. target.NonDestructiveTargets.OrderBy(x => x.PlannedEdition.EditionName)];
 
             //
             // Handle editions that we can upgrade to using a full upgrade process
@@ -269,25 +269,25 @@ namespace UnifiedUpdatePlatform.Media.Creator.Planning
                 }
             }
 
-            target.DestructiveTargets = target.DestructiveTargets.OrderBy(x => x.PlannedEdition.EditionName).ToList();
+            target.DestructiveTargets = [.. target.DestructiveTargets.OrderBy(x => x.PlannedEdition.EditionName)];
 
             return target;
         }
 
         private static (List<PlannedEdition>, List<PlannedEdition>) GetEditionsThatCanBeTargetedUsingPackageDowngrade(
             string UUPPath,
-            IEnumerable<CompDB> compDBs,
+            IEnumerable<BaseManifest> compDBs,
             IEnumerable<PlannedEdition> availableCanonicalEditions,
             List<EditionMappingXML.Edition> possibleEditionUpgrades,
             ProgressCallback? progressCallback = null)
         {
-            List<PlannedEdition> availableEditionsByDowngradingInPriority = new();
-            List<PlannedEdition> availableEditionsByDowngrading = new();
+            List<PlannedEdition> availableEditionsByDowngradingInPriority = [];
+            List<PlannedEdition> availableEditionsByDowngrading = [];
 
             //
             // Attempt to get the neutral Composition Database listing all available files
             //
-            CompDB? neutralCompDB = compDBs.GetNeutralCompDB();
+            BaseManifest? neutralCompDB = compDBs.GetNeutralCompDB();
 
             if (neutralCompDB != null &&
                 neutralCompDB.Features.Feature.FirstOrDefault(x => x.FeatureID == "BaseNeutral")?
@@ -387,7 +387,7 @@ namespace UnifiedUpdatePlatform.Media.Creator.Planning
         }
 
         public static bool GetTargetedPlan(
-            IEnumerable<CompDB> compDBs,
+            IEnumerable<BaseManifest> compDBs,
             string EditionPack,
             string LanguageCode,
             bool IncludeServicingCapableOnlyTargets,
@@ -400,10 +400,10 @@ namespace UnifiedUpdatePlatform.Media.Creator.Planning
 
         public static List<string> PrintEditionTarget(EditionTarget editionTarget, int padding = 0)
         {
-            List<string> lines = new()
-            {
+            List<string> lines =
+            [
                 $"-> Name: {editionTarget.PlannedEdition.EditionName}, Availability: {editionTarget.PlannedEdition.AvailabilityType}"
-            };
+            ];
 
             if (editionTarget.PlannedEdition.AppXInstallWorkloads?.Length > 0)
             {
@@ -444,7 +444,7 @@ namespace UnifiedUpdatePlatform.Media.Creator.Planning
 
         public static bool GetTargetedPlan(
             string UUPPath,
-            IEnumerable<CompDB> compDBs,
+            IEnumerable<BaseManifest> compDBs,
             string EditionPack,
             string LanguageCode,
             bool IncludeServicingCapableOnlyTargets,
@@ -454,7 +454,7 @@ namespace UnifiedUpdatePlatform.Media.Creator.Planning
         {
             bool VerifyFiles = !string.IsNullOrEmpty(UUPPath);
 
-            EditionTargets = new List<EditionTarget>();
+            EditionTargets = [];
 
             bool result = true;
 
@@ -463,7 +463,7 @@ namespace UnifiedUpdatePlatform.Media.Creator.Planning
             //
             // Get base editions that are available with all their files
             //
-            IEnumerable<CompDB> filteredCompDBs = compDBs.GetEditionCompDBsForLanguage(LanguageCode).Where(x =>
+            IEnumerable<BaseManifest> filteredCompDBs = compDBs.GetEditionCompDBsForLanguage(LanguageCode).Where(x =>
             {
                 bool success = !VerifyFiles;
                 if (!success)
@@ -504,7 +504,7 @@ namespace UnifiedUpdatePlatform.Media.Creator.Planning
 
                 if (compDBs.Any(x => x.Name?.StartsWith("Build~") == true && (x.Name?.EndsWith("~Desktop_Apps~~") == true || x.Name?.EndsWith("~Desktop_Apps_Moment~~") == true)))
                 {
-                    IEnumerable<CompDB> AppCompDBs = compDBs.Where(x => x.Name?.StartsWith("Build~") == true && (x.Name?.EndsWith("~Desktop_Apps~~") == true || x.Name?.EndsWith("~Desktop_Apps_Moment~~") == true));
+                    IEnumerable<BaseManifest> AppCompDBs = compDBs.Where(x => x.Name?.StartsWith("Build~") == true && (x.Name?.EndsWith("~Desktop_Apps~~") == true || x.Name?.EndsWith("~Desktop_Apps_Moment~~") == true));
                     edition.AppXInstallWorkloads = AppxSelectionEngine.GetAppxInstallationWorkloads(compDB, AppCompDBs, LanguageCode);
                 }
 
@@ -523,13 +523,13 @@ namespace UnifiedUpdatePlatform.Media.Creator.Planning
                 // This dictionary holds the possible virtual edition upgrades
                 // Example: Professional -> ProfessionalEducation
                 //
-                List<EditionMappingXML.Edition> virtualWindowsEditions = new();
+                List<EditionMappingXML.Edition> virtualWindowsEditions = [];
 
                 //
                 // This dictionary holds the possible edition upgrades
                 // Example: Core -> Professional
                 //
-                List<EditionMappingXML.Edition> possibleEditionUpgrades = new();
+                List<EditionMappingXML.Edition> possibleEditionUpgrades = [];
 
                 if (!string.IsNullOrEmpty(EditionPack) && File.Exists(EditionPack))
                 {
@@ -576,7 +576,7 @@ namespace UnifiedUpdatePlatform.Media.Creator.Planning
                                     !string.IsNullOrEmpty(x.Virtual) &&
                                     x.Virtual.Equals("true", StringComparison.InvariantCultureIgnoreCase)).OrderBy(x => x.ParentEdition);
 
-                                virtualWindowsEditions = virtualeditions.ToList();
+                                virtualWindowsEditions = [.. virtualeditions];
                             }
                             catch { }
                         }
@@ -648,7 +648,7 @@ namespace UnifiedUpdatePlatform.Media.Creator.Planning
 
                 progressCallback?.Invoke("Building Targets");
 
-                List<string> editionsAdded = new();
+                List<string> editionsAdded = [];
 
                 foreach (PlannedEdition? ed in availableCanonicalEditions)
                 {

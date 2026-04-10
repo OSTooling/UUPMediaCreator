@@ -63,6 +63,9 @@ namespace UUPMediaConverter
         }
 
         [Option("no-key-prompt", HelpText = "Use the alternate efisys and cdboot implementations to suppress the 'press any key' prompt", Required = false)]
-        public bool SuppressAnyKeyPrompt { get; set; }
+        public bool SuppressAnyKeyPrompt
+        {
+            get; set;
+        }
     }
 }

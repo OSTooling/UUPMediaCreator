@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <OutputType>Library</OutputType>
@@ -10,6 +10,9 @@
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
+    <ProjectReference Include="..\UnifiedUpdatePlatform.Services.WindowsUpdate.ESRP\UnifiedUpdatePlatform.Services.WindowsUpdate.ESRP.csproj" />
+    <ProjectReference Include="..\UnifiedUpdatePlatform.Services.WindowsUpdate.Models\UnifiedUpdatePlatform.Services.WindowsUpdate.Models.csproj" />
+    <ProjectReference Include="..\UnifiedUpdatePlatform.Services.WindowsUpdate.Targeting\UnifiedUpdatePlatform.Services.WindowsUpdate.Targeting.csproj" />
     <ProjectReference Include="..\Cabinet\Cabinet.csproj" />
     <ProjectReference Include="..\CompDB\UnifiedUpdatePlatform.Services.Composition.Database.csproj" />
   </ItemGroup>

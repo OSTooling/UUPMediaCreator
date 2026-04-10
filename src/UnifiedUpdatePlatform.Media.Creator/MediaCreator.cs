@@ -48,7 +48,7 @@ namespace UnifiedUpdatePlatform.Media.Creator
             string InstallWIMFilePath,
             string WinREWIMFilePath,
             Common.Messaging.Common.CompressionType CompressionType,
-            IEnumerable<CompDB> CompositionDatabases,
+            IEnumerable<BaseManifest> CompositionDatabases,
             TempManager tempManager,
             string VHDMountPath = null,
             string CurrentBackupVHD = null,
@@ -285,7 +285,7 @@ namespace UnifiedUpdatePlatform.Media.Creator
         public static bool GetTargetedPlan(
             string UUPPath,
             string LanguageCode,
-            List<CompDB> CompositionDatabases,
+            List<BaseManifest> CompositionDatabases,
             out List<EditionTarget> EditionTargets,
             TempManager tempManager,
             ProgressCallback progressCallback = null)
@@ -297,7 +297,7 @@ namespace UnifiedUpdatePlatform.Media.Creator
             //
             // Get base editions that are available with all their files
             //
-            IEnumerable<CompDB> filteredCompositionDatabases = CompositionDatabases.GetEditionCompDBsForLanguage(LanguageCode).Where(x =>
+            IEnumerable<BaseManifest> filteredCompositionDatabases = CompositionDatabases.GetEditionCompDBsForLanguage(LanguageCode).Where(x =>
             {
                 (bool success, HashSet<string> missingfiles) = Planning.FileLocator.VerifyFilesAreAvailableForCompDB(x, UUPPath);
                 return success;
@@ -388,7 +388,7 @@ namespace UnifiedUpdatePlatform.Media.Creator
 
             try
             {
-                List<CompDB> CompositionDatabases = Planning.FileLocator.GetCompDBsFromUUPFiles(UUPPath, tempManager);
+                List<BaseManifest> CompositionDatabases = Planning.FileLocator.GetCompDBsFromUUPFiles(UUPPath, tempManager);
 
                 result = GetTargetedPlan(UUPPath, LanguageCode, CompositionDatabases, out List<EditionTarget> editionTargets, tempManager, progressCallback);
                 if (!result)

@@ -2,7 +2,7 @@
   "profiles": {
     "UnifiedUpdatePlatform.Media.Download": {
       "commandName": "Project",
-      "commandLineArgs": "-s Professional -v 10.0.22635.2483 -t amd64 -r External -b Dev -a CB -c ni_release -y"
+      "commandLineArgs": "request-bsp-download3 -s Professional -v 10.0.26200.2483 -t arm64 -r Retail -b Retail -a CB -c ge_release -o C:\\Users\\gus33\\Documents\\GitHub\\WOA-Project\\Reference\\Qualcomm-Reference-Drivers\\TESTING -y --bsp-product-version 200.0.9.0"
     }
   }
 }

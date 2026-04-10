@@ -32,11 +32,11 @@ namespace UnifiedUpdatePlatform.Media.Creator
 {
     internal static class FileLocator
     {
-        internal static (bool, HashSet<string>) VerifyFilesAreAvailableForCompositionDatabases(HashSet<CompDB> CompositionDatabases, string UUPPath)
+        internal static (bool, HashSet<string>) VerifyFilesAreAvailableForCompositionDatabases(HashSet<BaseManifest> CompositionDatabases, string UUPPath)
         {
-            HashSet<string> missingPackages = new();
+            HashSet<string> missingPackages = [];
 
-            foreach (CompDB compDB in CompositionDatabases)
+            foreach (BaseManifest compDB in CompositionDatabases)
             {
                 (bool succeeded, HashSet<string> missingFiles) = Planning.FileLocator.VerifyFilesAreAvailableForCompDB(compDB, UUPPath);
                 foreach (string? missingFile in missingFiles)
@@ -51,12 +51,12 @@ namespace UnifiedUpdatePlatform.Media.Creator
             return (missingPackages.Count == 0, missingPackages);
         }
 
-        internal static CompDB? GetEditionCompDBForLanguage(
-            IEnumerable<CompDB> CompositionDatabases,
+        internal static BaseManifest? GetEditionCompDBForLanguage(
+            IEnumerable<BaseManifest> CompositionDatabases,
             string Edition,
             string LanguageCode)
         {
-            foreach (CompDB? compDB in CompositionDatabases)
+            foreach (BaseManifest? compDB in CompositionDatabases)
             {
                 //
                 // Newer style compdbs have a tag attribute, make use of it.
@@ -95,15 +95,15 @@ namespace UnifiedUpdatePlatform.Media.Creator
         internal static (bool Succeeded, string BaseESD) LocateFilesForSetupMediaCreation(
             string UUPPath,
             string LanguageCode,
-            IEnumerable<CompDB> CompositionDatabases,
+            IEnumerable<BaseManifest> CompositionDatabases,
             ProgressCallback? progressCallback = null)
         {
             progressCallback?.Invoke(Common.Messaging.Common.ProcessPhase.ReadingMetadata, true, 0, "Looking up Composition Database in order to find a Base ESD image appropriate for building windows setup files.");
 
-            HashSet<CompDB> filteredCompositionDatabases = CompositionDatabases.GetEditionCompDBsForLanguage(LanguageCode);
+            HashSet<BaseManifest> filteredCompositionDatabases = CompositionDatabases.GetEditionCompDBsForLanguage(LanguageCode);
             if (filteredCompositionDatabases.Count > 0)
             {
-                foreach (CompDB? currentCompDB in filteredCompositionDatabases)
+                foreach (BaseManifest? currentCompDB in filteredCompositionDatabases)
                 {
                     foreach (Package feature in currentCompDB.Features.Feature[0].Packages.Package)
                     {
@@ -136,14 +136,14 @@ namespace UnifiedUpdatePlatform.Media.Creator
             string UUPPath,
             string LanguageCode,
             string EditionID,
-            IEnumerable<CompDB> CompositionDatabases,
+            IEnumerable<BaseManifest> CompositionDatabases,
             ProgressCallback? progressCallback = null)
         {
             bool success = true;
 
             progressCallback?.Invoke(Common.Messaging.Common.ProcessPhase.ReadingMetadata, true, 0, "Enumerating files");
 
-            CompDB? compDB = GetEditionCompDBForLanguage(CompositionDatabases, EditionID, LanguageCode);
+            BaseManifest? compDB = GetEditionCompDBForLanguage(CompositionDatabases, EditionID, LanguageCode);
 
             if (compDB == null)
             {
@@ -153,7 +153,7 @@ namespace UnifiedUpdatePlatform.Media.Creator
 
             if (CompositionDatabases.Any(x => x.Name?.StartsWith("Build~") == true && (x.Name?.EndsWith("~Desktop_Apps~~") == true || x.Name?.EndsWith("~Desktop_Apps_Moment~~") == true)))
             {
-                IEnumerable<CompDB> AppCompDBs = CompositionDatabases.Where(x => x.Name?.StartsWith("Build~") == true && (x.Name?.EndsWith("~Desktop_Apps~~") == true || x.Name?.EndsWith("~Desktop_Apps_Moment~~") == true));
+                IEnumerable<BaseManifest> AppCompDBs = CompositionDatabases.Where(x => x.Name?.StartsWith("Build~") == true && (x.Name?.EndsWith("~Desktop_Apps~~") == true || x.Name?.EndsWith("~Desktop_Apps_Moment~~") == true));
                 AppxSelectionEngine.GenerateLicenseXmlFiles(compDB, AppCompDBs, UUPPath);
             }
 
@@ -170,17 +170,17 @@ namespace UnifiedUpdatePlatform.Media.Creator
             string UUPPath,
             string LanguageCode,
             string EditionID,
-            IEnumerable<CompDB> CompositionDatabases,
+            IEnumerable<BaseManifest> CompositionDatabases,
             ProgressCallback? progressCallback = null)
         {
             bool success = true;
 
-            HashSet<string> ReferencePackages = new();
-            HashSet<string> referencePackagesToConvert = new();
+            HashSet<string> ReferencePackages = [];
+            HashSet<string> referencePackagesToConvert = [];
             string? BaseESD = null;
             progressCallback?.Invoke(Common.Messaging.Common.ProcessPhase.ReadingMetadata, true, 0, "Enumerating files");
 
-            CompDB? compDB = GetEditionCompDBForLanguage(CompositionDatabases, EditionID, LanguageCode);
+            BaseManifest? compDB = GetEditionCompDBForLanguage(CompositionDatabases, EditionID, LanguageCode);
 
             if (compDB == null)
             {

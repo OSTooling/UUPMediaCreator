@@ -23,6 +23,7 @@ using System.IO;
 using System.Xml;
 using System.Xml.Serialization;
 using UnifiedUpdatePlatform.Services.WindowsUpdate;
+using UnifiedUpdatePlatform.Services.WindowsUpdate.Targeting;
 
 namespace UUPDownload.DownloadRequest
 {

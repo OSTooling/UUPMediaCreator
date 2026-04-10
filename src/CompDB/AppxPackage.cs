@@ -23,7 +23,7 @@ using System.Xml.Serialization;
 
 namespace UnifiedUpdatePlatform.Services.Composition.Database
 {
-    [XmlRoot(ElementName = "Package", Namespace = "http://schemas.microsoft.com/embedded/2004/10/ImageUpdate")]
+    [XmlRoot(ElementName = "Package")]
     public class AppxPackage
     {
         [XmlAttribute(AttributeName = "AppXPackageType")]
@@ -41,12 +41,12 @@ namespace UnifiedUpdatePlatform.Services.Composition.Database
         {
             get; set;
         }
-        [XmlElement(ElementName = "Payload", Namespace = "http://schemas.microsoft.com/embedded/2004/10/ImageUpdate")]
+        [XmlElement(ElementName = "Payload")]
         public Payload Payload
         {
             get; set;
         }
-        [XmlElement(ElementName = "LicenseData", Namespace = "http://schemas.microsoft.com/embedded/2004/10/ImageUpdate")]
+        [XmlElement(ElementName = "LicenseData")]
         public string LicenseData
         {
             get; set;

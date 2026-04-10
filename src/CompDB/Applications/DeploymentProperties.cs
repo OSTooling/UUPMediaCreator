@@ -57,7 +57,7 @@ namespace UnifiedUpdatePlatform.Services.Composition.Database.Applications
 
         public void AddApplicablePackages(IEnumerable<Package> packageElements, IEnumerable<string> applicableLanguageTags)
         {
-            PackageIDs = new HashSet<string>();
+            PackageIDs = [];
             Dictionary<int, string> scaleDictionary = null;
             foreach (Package package in packageElements)
             {

@@ -9,6 +9,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\Windows.Internal.Flighting\Windows.Internal.Flighting.csproj" />
+    <ProjectReference Include="..\UUPDownload\UUPDownload.csproj" />
   </ItemGroup>
 
 </Project>

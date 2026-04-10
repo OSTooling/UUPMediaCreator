@@ -23,14 +23,8 @@ using System;
 
 namespace UUPDownload
 {
-    internal static class Logging
+    internal static partial class Logging
     {
-        public enum LoggingLevel
-        {
-            Information,
-            Warning,
-            Error
-        }
 
         private static readonly ConsoleColor Foreground;
 

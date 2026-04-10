@@ -29,17 +29,11 @@ using UnifiedUpdatePlatform.Services.WindowsUpdate;
 
 namespace UUPDownload
 {
-    public static class BuildTargets
+    public static partial class BuildTargets
     {
-        public class EditionPlanningWithLanguage
-        {
-            public List<EditionTarget> EditionTargets;
-            public string LanguageCode;
-        }
-
         public static async Task<EditionPlanningWithLanguage> GetTargetedPlanAsync(this UpdateData update, string LanguageCode)
         {
-            HashSet<CompDB> compDBs = await update.GetCompDBsAsync();
+            HashSet<BaseManifest> compDBs = await update.GetCompDBsAsync();
             Package editionPackPkg = compDBs.GetEditionPackFromCompDBs();
 
             string editionPkg = await update.DownloadFileFromDigestAsync(editionPackPkg.Payload.PayloadItem.First(x => !x.Path.EndsWith(".psf")).PayloadHash);
@@ -48,7 +42,7 @@ namespace UUPDownload
 
         public static async Task<EditionPlanningWithLanguage> GetTargetedPlanAsync(this UpdateData update, string LanguageCode, string editionPkg)
         {
-            HashSet<CompDB> compDBs = await update.GetCompDBsAsync();
+            HashSet<BaseManifest> compDBs = await update.GetCompDBsAsync();
             if (string.IsNullOrEmpty(editionPkg))
             {
                 return null;

@@ -24,6 +24,7 @@ using System;
 using System.Diagnostics;
 using System.Net;
 using System.Reflection;
+using UUPDownload.Options;
 
 namespace UUPDownload
 {
@@ -74,11 +75,26 @@ namespace UUPDownload
         {
             ServicePointManager.DefaultConnectionLimit = int.MaxValue;
 
-            return Parser.Default.ParseArguments<DownloadRequestOptions, DownloadReplayOptions, GetBuildsOptions>(args).MapResult(
+            return Parser.Default.ParseArguments<DownloadRequestOptions, BSPDownloadRequestOptions, BSPDownloadRequestOptions2, BSPDownloadRequestOptions3, DownloadReplayOptions, GetBuildsOptions>(args).MapResult(
               (DownloadRequestOptions opts) =>
               {
                   PrintLogo();
                   return WrapAction(() => DownloadRequest.Process.ParseDownloadOptions(opts));
+              },
+              (BSPDownloadRequestOptions opts) =>
+              {
+                  PrintLogo();
+                  return WrapAction(() => DownloadRequest.Drivers.ProcessDrivers.ParseDownloadOptions(opts));
+              },
+              (BSPDownloadRequestOptions2 opts) =>
+              {
+                  PrintLogo();
+                  return WrapAction(() => DownloadRequest.ReferenceDriversRepo.ProcessDrivers.ParseDownloadOptions(opts));
+              },
+              (BSPDownloadRequestOptions3 opts) =>
+              {
+                  PrintLogo();
+                  return WrapAction(() => DownloadRequest.DriversAuto.ProcessDrivers.ParseDownloadOptions(opts));
               },
               (DownloadReplayOptions opts) =>
               {

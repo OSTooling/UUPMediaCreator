@@ -31,6 +31,7 @@ namespace Privileges
 
         public string PrivilegeName { get; } = null;
 
+        [Obsolete]
         public override void GetObjectData(SerializationInfo info, StreamingContext context)
         {
             if (info == null)
