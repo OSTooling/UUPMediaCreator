@@ -45,7 +45,7 @@ jobs:
           dotnet-version: "7.0.x"
 
       - name: Add MSBuild to PATH
-        uses: microsoft/setup-msbuild@v2.0.0
+        uses: microsoft/setup-msbuild@v3.0.0
 
       - name: Build CLI utilities
         shell: pwsh
