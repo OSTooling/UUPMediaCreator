@@ -37,7 +37,7 @@ jobs:
             architecture: arm64
     steps:
       - name: Checkout
-        uses: actions/checkout@v4.2.2
+        uses: actions/checkout@v6.0.2
 
       - name: Install .NET SDK
         uses: actions/setup-dotnet@v4.1.0
