@@ -419,7 +419,7 @@ namespace UnifiedUpdatePlatform.Media.Creator
                 //
                 // Build installer
                 //
-                result = SetupMediaCreator.CreateSetupMedia(UUPPath, LanguageCode, MediaRootPath, WinREWIMFilePath, CompressionType, CompositionDatabases, tempManager, progressCallback);
+                result = SetupMediaCreator.CreateSetupMedia(UUPPath, LanguageCode, MediaRootPath, WinREWIMFilePath, CompressionType, CompositionDatabases, tempManager, progressCallback: progressCallback, edition: Edition);
                 if (!result)
                 {
                     error = "An error occurred while creating setup media.";

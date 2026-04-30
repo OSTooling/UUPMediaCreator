@@ -96,9 +96,39 @@ namespace UnifiedUpdatePlatform.Media.Creator
             string UUPPath,
             string LanguageCode,
             IEnumerable<CompDB> CompositionDatabases,
-            ProgressCallback? progressCallback = null)
+            ProgressCallback? progressCallback = null,
+            string edition = null)
         {
             progressCallback?.Invoke(Common.Messaging.Common.ProcessPhase.ReadingMetadata, true, 0, "Looking up Composition Database in order to find a Base ESD image appropriate for building windows setup files.");
+
+            if (edition != null)
+            {
+                CompDB? compDB = GetEditionCompDBForLanguage(CompositionDatabases, edition, LanguageCode);
+
+                if (compDB != null)
+                {
+                    foreach (Package feature in compDB.Features.Feature[0].Packages.Package)
+                    {
+                        Package pkg = compDB.Packages.Package.First(x => x.ID == feature.ID);
+
+                        string file = pkg.GetCommonlyUsedIncorrectFileName();
+
+                        if (feature.PackageType == "MetadataESD")
+                        {
+                            if (!File.Exists(Path.Combine(UUPPath, file)))
+                            {
+                                file = pkg.Payload.PayloadItem[0].Path.Replace('\\', Path.DirectorySeparatorChar);
+                                if (!File.Exists(Path.Combine(UUPPath, file)))
+                                {
+                                    break;
+                                }
+                            }
+
+                            return (true, Path.Combine(UUPPath, file));
+                        }
+                    }
+                }
+            }
 
             HashSet<CompDB> filteredCompositionDatabases = CompositionDatabases.GetEditionCompDBsForLanguage(LanguageCode);
             if (filteredCompositionDatabases.Count > 0)

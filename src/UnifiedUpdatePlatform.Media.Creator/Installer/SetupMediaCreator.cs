@@ -37,12 +37,13 @@ namespace UnifiedUpdatePlatform.Media.Creator.Installer
             Common.Messaging.Common.CompressionType CompressionType,
             IEnumerable<CompDB> CompositionDatabases,
             TempManager tempManager,
-            ProgressCallback progressCallback = null)
+            ProgressCallback progressCallback = null,
+            string edition = null)
         {
             bool result = true;
             string BaseESD = null;
 
-            (result, BaseESD) = FileLocator.LocateFilesForSetupMediaCreation(UUPPath, LanguageCode, CompositionDatabases, progressCallback);
+            (result, BaseESD) = FileLocator.LocateFilesForSetupMediaCreation(UUPPath, LanguageCode, CompositionDatabases, progressCallback, edition: edition);
             if (!result)
             {
                 goto exit;
