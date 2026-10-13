@@ -1,3 +1,5 @@
 @echo off
-
-msbuild /m /t:restore,cli\uupmediaconverter:publish,cli\uupdownload:publish /p:Platform=x64 /p:RuntimeIdentifier=win-x64 /p:PublishDir=%CD%\publish\artifacts\win-x64\CLI /p:PublishSingleFile=true /p:PublishTrimmed=false /p:Configuration=Release UUPMediaCreator.sln
+REM 64-bit Windows build (default .NET 10, Windows 10 1607+).
+REM See publish.cmd for details.
+call "%~dp0publish.cmd" win-x64 %*
+exit /b %ERRORLEVEL%

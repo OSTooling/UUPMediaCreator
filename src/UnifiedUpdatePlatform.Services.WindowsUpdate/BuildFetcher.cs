@@ -193,7 +193,7 @@ namespace UnifiedUpdatePlatform.Services.WindowsUpdate
 
             foreach (string file in potentialFiles)
             {
-                string edition = file.Split('_').Reverse().Skip(1).First();
+                string edition = file.Split('_').AsEnumerable().Reverse().Skip(1).First();
 
                 if (availableEditions.Any(x => x.Edition == edition))
                 {
@@ -252,7 +252,7 @@ namespace UnifiedUpdatePlatform.Services.WindowsUpdate
 
                             foreach (string file in potentialFiles)
                             {
-                                string edition = file.Split('_').Reverse().Skip(1).First();
+                                string edition = file.Split('_').AsEnumerable().Reverse().Skip(1).First();
 
                                 if (availableEditions.Any(x => x.Edition == edition))
                                 {
@@ -351,21 +351,27 @@ namespace UnifiedUpdatePlatform.Services.WindowsUpdate
         {
             return new Dictionary<CTAC, string>()
             {
-                { new CTAC(osSkuId, "10.0.15063.534", machineType, "WIS", "", "CB", "rs2_release", "Production", false), "Insider Slow (RS2)" },
-                { new CTAC(osSkuId, "10.0.15063.534", machineType, "WIF", "", "CB", "rs2_release", "Production", false), "Insider Fast (RS2)" },
-                { new CTAC(osSkuId, "10.0.16299.15", machineType, "Retail", "", "CB", "rs3_release", "Production", true), "Retail (RS3)" },
-                { new CTAC(osSkuId, "10.0.17134.1", machineType, "Retail", "", "CB", "rs4_release", "Production", true), "Retail (RS4)" },
-                { new CTAC(osSkuId, "10.0.17763.1217", machineType, "Retail", "", "CB", "rs5_release", "Production", true), "Retail (RS5)" },
-                { new CTAC(osSkuId, "10.0.18362.836", machineType, "Retail", "", "CB", "19h1_release", "Production", true), "Retail (TI)" },
-                { new CTAC(osSkuId, "10.0.19041.200", machineType, "Retail", "", "CB", "vb_release", "Production", true, false), "Retail (VB)"},
+                // NOTE: Windows 10 1703 (rs2_release / 15063) and older are no longer
+                // offered by the Windows Update servers, so the old "Insider Slow/Fast
+                // (RS2)" entries have been removed.
+                { new CTAC(osSkuId, "10.0.16299.15", machineType, "Retail", "", "CB", "rs3_release", "Production", true), "Retail (1709 - RS3)" },
+                { new CTAC(osSkuId, "10.0.17134.1", machineType, "Retail", "", "CB", "rs4_release", "Production", true), "Retail (1803 - RS4)" },
+                { new CTAC(osSkuId, "10.0.17763.1217", machineType, "Retail", "", "CB", "rs5_release", "Production", true), "Retail (1809 - RS5)" },
+                { new CTAC(osSkuId, "10.0.18362.836", machineType, "Retail", "", "CB", "19h1_release", "Production", true), "Retail (1903 - 19H1)" },
+                { new CTAC(osSkuId, "10.0.19041.200", machineType, "Retail", "", "CB", "vb_release", "Production", false, false), "Retail (Windows 10 - VB)" },
                 { new CTAC(osSkuId, "10.0.19041.84", machineType, "Retail", "", "CB", "vb_release", "Production", false), "Retail" },
-                { new CTAC(osSkuId, "10.0.19041.200", machineType, "External", "ReleasePreview", "CB", "vb_release", "Production", false, false), "Release Preview"},
-                { new CTAC(osSkuId, "10.0.19041.200", machineType, "External", "Beta", "CB", "vb_release", "Production", false, false), "Beta "},
-                { new CTAC(osSkuId, "10.0.19041.200", machineType, "External", "Dev", "CB", "vb_release", "Production", false, false), "Dev"},
-                { new CTAC(osSkuId, "10.0.19041.200", machineType, "RP", "External", "CB", "vb_release", "Production", false, false, "Active"), "Insider Release Preview"},
-                { new CTAC(osSkuId, "10.0.19041.200", machineType, "WIS", "External", "CB", "vb_release", "Production", false, false, "Active"), "Insider Slow"},
-                { new CTAC(osSkuId, "10.0.19041.200", machineType, "WIF", "External", "CB", "vb_release", "Production", false, false, "Active"), "Insider Fast"},
-                { new CTAC(osSkuId, "10.0.19041.200", machineType, "WIF", "External", "CB", "vb_release", "Production", false, false, "Skip"), "Skip Ahead"},
+                { new CTAC(osSkuId, "10.0.19045.1", machineType, "Retail", "", "CB", "vb_release", "Production", false, IsEsu: true), "Retail (Windows 10 ESU)" },
+                { new CTAC(osSkuId, "10.0.22621.1", machineType, "Retail", "", "CB", "ni_release", "Production", false), "Retail (Windows 11 - NI)" },
+                { new CTAC(osSkuId, "10.0.26100.1", machineType, "Retail", "", "CB", "ge_release", "Production", false), "Retail (Windows 11 - GE)" },
+                { new CTAC(osSkuId, "10.0.26100.1", machineType, "External", "ReleasePreview", "CB", "ge_release", "Production", false, false), "Release Preview (Windows 11)" },
+                { new CTAC(osSkuId, "10.0.26100.1", machineType, "External", "Beta", "CB", "ge_release", "Production", false, false), "Beta (Windows 11)" },
+                { new CTAC(osSkuId, "10.0.26100.1", machineType, "External", "Dev", "CB", "rs_prerelease", "Production", false, false), "Dev" },
+                { new CTAC(osSkuId, "10.0.26100.1", machineType, "External", "CanaryChannel", "CB", "rs_prerelease", "Production", false, false), "Canary" },
+                { new CTAC(osSkuId, "10.0.19045.1", machineType, "External", "Beta", "CB", "vb_release", "Production", false, false), "Beta (Windows 10)" },
+                { new CTAC(osSkuId, "10.0.19041.200", machineType, "RP", "External", "CB", "vb_release", "Production", false, false, "Active"), "Insider Release Preview" },
+                { new CTAC(osSkuId, "10.0.19041.200", machineType, "WIS", "External", "CB", "vb_release", "Production", false, false, "Active"), "Insider Slow" },
+                { new CTAC(osSkuId, "10.0.19041.200", machineType, "WIF", "External", "CB", "vb_release", "Production", false, false, "Active"), "Insider Fast" },
+                { new CTAC(osSkuId, "10.0.19041.200", machineType, "WIF", "External", "CB", "vb_release", "Production", false, false, "Skip"), "Skip Ahead" },
             };
         }
 

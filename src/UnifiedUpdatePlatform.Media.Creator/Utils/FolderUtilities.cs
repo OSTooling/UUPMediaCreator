@@ -52,7 +52,7 @@ namespace UnifiedUpdatePlatform.Media.Creator.Utils
         public static string GetParentPath(string path)
         {
             return path.Contains(Path.DirectorySeparatorChar) ?
-                string.Join(Path.DirectorySeparatorChar, path.Split(Path.DirectorySeparatorChar).Reverse().Skip(1).Reverse()) : "";
+                string.Join(Path.DirectorySeparatorChar, path.Split(Path.DirectorySeparatorChar).AsEnumerable().Reverse().Skip(1).Reverse()) : "";
         }
     }
 }

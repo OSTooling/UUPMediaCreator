@@ -26,7 +26,19 @@ namespace UnifiedUpdatePlatform.Services.Temp
         private ulong i = 0;
         private readonly List<string> tempPaths = new();
         private bool disposed = false;
-        private readonly string Temp = Environment.GetEnvironmentVariable("TEMP") ?? "";
+        private readonly string Temp = GetDefaultTempPath();
+
+        /// <summary>
+        /// Resolves the default temporary directory.
+        /// Windows exposes it through the TEMP environment variable, while
+        /// Linux/macOS do not set TEMP by default, so we fall back to
+        /// <see cref="Path.GetTempPath"/> (which honors TMPDIR on those platforms).
+        /// </summary>
+        private static string GetDefaultTempPath()
+        {
+            string? temp = Environment.GetEnvironmentVariable("TEMP");
+            return string.IsNullOrWhiteSpace(temp) ? Path.GetTempPath() : temp;
+        }
 
         public TempManager()
         {
@@ -40,7 +52,7 @@ namespace UnifiedUpdatePlatform.Services.Temp
                 Temp = temp;
             }
 
-            if (!Directory.Exists(Temp))
+            if (string.IsNullOrWhiteSpace(Temp) || !Directory.Exists(Temp))
             {
                 throw new DirectoryNotFoundException("The specified temporary directory cannot be accessed or does not exist.");
             }

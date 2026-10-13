@@ -34,13 +34,13 @@ namespace UUPMediaConverter
         public static string GetExecutableDirectory()
         {
             string fileName = Process.GetCurrentProcess().MainModule.FileName;
-            return fileName.Contains(Path.DirectorySeparatorChar) ? string.Join(Path.DirectorySeparatorChar, fileName.Split(Path.DirectorySeparatorChar).Reverse().Skip(1).Reverse()) : "";
+            return fileName.Contains(Path.DirectorySeparatorChar) ? string.Join(Path.DirectorySeparatorChar, fileName.Split(Path.DirectorySeparatorChar).AsEnumerable().Reverse().Skip(1).Reverse()) : "";
         }
 
         public static string GetParentExecutableDirectory()
         {
             string runningDirectory = GetExecutableDirectory();
-            return runningDirectory.Contains(Path.DirectorySeparatorChar) ? string.Join(Path.DirectorySeparatorChar, runningDirectory.Split(Path.DirectorySeparatorChar).Reverse().Skip(1).Reverse()) : "";
+            return runningDirectory.Contains(Path.DirectorySeparatorChar) ? string.Join(Path.DirectorySeparatorChar, runningDirectory.Split(Path.DirectorySeparatorChar).AsEnumerable().Reverse().Skip(1).Reverse()) : "";
         }
 
         public static int ProcessDesktopConvert(DesktopConvertOptions opt)

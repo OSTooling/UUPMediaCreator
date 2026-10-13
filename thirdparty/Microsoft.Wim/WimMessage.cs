@@ -660,10 +660,10 @@ namespace Microsoft.Wim
             : base(wParam, lParam)
         {
             // Marshal the files deleted
-            Param1 = wParam;
+            Param1 = (long)wParam;
 
             // Marshal the drive letter
-            Param2 = (char)lParam;
+            Param2 = (char)(long)lParam;
         }
 
         /// <summary>

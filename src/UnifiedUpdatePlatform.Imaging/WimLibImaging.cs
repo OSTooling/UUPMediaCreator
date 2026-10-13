@@ -401,7 +401,7 @@ namespace UnifiedUpdatePlatform.Services.Imaging
         private static string GetExecutableDirectory()
         {
             string fileName = Environment.ProcessPath;
-            return fileName.Contains(Path.DirectorySeparatorChar) ? string.Join(Path.DirectorySeparatorChar, fileName.Split(Path.DirectorySeparatorChar).Reverse().Skip(1).Reverse()) : "";
+            return fileName.Contains(Path.DirectorySeparatorChar) ? string.Join(Path.DirectorySeparatorChar, fileName.Split(Path.DirectorySeparatorChar).AsEnumerable().Reverse().Skip(1).Reverse()) : "";
         }
 
         private static void InitNativeLibrary()

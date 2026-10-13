@@ -1,3 +1,5 @@
 @echo off
-
-msbuild /m /t:restore,cli\uupmediaconverter:publish,cli\uupdownload:publish /p:Platform=x64 /p:RuntimeIdentifier=linux-x64 /p:PublishDir=%CD%\publish\artifacts\linux-x64\CLI /p:PublishSingleFile=true /p:PublishTrimmed=false /p:Configuration=Release UUPMediaCreator.sln
+REM linux-x64 build, cross-compiled from Windows (default .NET 10).
+REM See publish.cmd for details. On Linux use ./publish_linux.sh instead.
+call "%~dp0publish.cmd" linux-x64 %*
+exit /b %ERRORLEVEL%

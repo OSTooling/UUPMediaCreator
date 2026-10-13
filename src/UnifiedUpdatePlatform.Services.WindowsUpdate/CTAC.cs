@@ -291,9 +291,10 @@ namespace UnifiedUpdatePlatform.Services.WindowsUpdate
                     bool SyncCurrentVersionOnly,
                     bool IsStore = false,
                     string ContentType = "Mainline",
-                    bool IsVbsEnabled = true) : base()
+                    bool IsVbsEnabled = true,
+                    bool IsEsu = false) : base()
         {
-            BuildCTAC(ReportingSku, ReportingVersion, MachineType, FlightRing, FlightingBranchName, BranchReadinessLevel, CurrentBranch, ReleaseType, SyncCurrentVersionOnly, IsStore, ContentType, IsVbsEnabled);
+            BuildCTAC(ReportingSku, ReportingVersion, MachineType, FlightRing, FlightingBranchName, BranchReadinessLevel, CurrentBranch, ReleaseType, SyncCurrentVersionOnly, IsStore, ContentType, IsVbsEnabled, IsEsu);
         }
 
         private void BuildCTAC(
@@ -308,7 +309,8 @@ namespace UnifiedUpdatePlatform.Services.WindowsUpdate
             bool SyncCurrentVersionOnly,
             bool IsStore = false,
             string content = "Mainline",
-            bool IsVbsEnabled = true
+            bool IsVbsEnabled = true,
+            bool IsEsu = false
         )
         {
             int flightEnabled = FlightRing == "Retail" ? 0 : 1;
@@ -470,6 +472,21 @@ namespace UnifiedUpdatePlatform.Services.WindowsUpdate
                                     $"IsRetailOS={FlightRing == "Retail"}&" +
                                     $"MediaVersion={ReportingVersion}" +
                                     $"IsVbsEnabled={(IsVbsEnabled ? 1 : 0)}";
+
+            if (IsEsu)
+            {
+                // Windows 10 Extended Security Updates (ESU): once Windows 10 22H2
+                // reached end of support (2025-10-14) the monthly cumulative updates
+                // are only offered to devices that report ESU enrollment. Reporting
+                // these attributes makes the request look like an enrolled
+                // Windows 10 22H2 (vb_release) device, so the servers hand out the
+                // ESU builds (for example 10.0.19045.7727).
+                DeviceAttributes += "&Win10ConsumerESUStatus=3&" +
+                                        "Win10ConsumerESUAY=10&" +
+                                        "Win10CommercialAzureESUEligible=1&" +
+                                        "Win10CommercialKeybasedESUEligible=2&" +
+                                        "Win10CommercialW365ESUEligible=1";
+            }
 
             if (ReportingSku is OSSkuId.EnterpriseS or OSSkuId.EnterpriseSN || ReportingSku.ToString().Contains("Server", StringComparison.InvariantCultureIgnoreCase))
             {

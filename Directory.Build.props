@@ -1,0 +1,18 @@
+<Project>
+
+  <!--
+    Target framework selection.
+
+    Defaults to net10.0. It can be overridden on the command line to build the
+    legacy (Windows 7 SP1 / 8.1) flavour, for example:
+
+      dotnet build -p:UUPMediaTargetFramework=net6.0
+
+    net6.0 is the last .NET runtime that runs on Windows 7 SP1 (the default
+    net10.0 requires Windows 10 1607 or later).
+  -->
+  <PropertyGroup>
+    <UUPMediaTargetFramework Condition="'$(UUPMediaTargetFramework)' == ''">net10.0</UUPMediaTargetFramework>
+  </PropertyGroup>
+
+</Project>

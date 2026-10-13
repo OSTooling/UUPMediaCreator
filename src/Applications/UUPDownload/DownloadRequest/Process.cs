@@ -53,7 +53,8 @@ namespace UUPDownload.DownloadRequest
                 opts.Password,
                 opts.OutputFolder,
                 opts.Language,
-                opts.Edition).Wait();
+                opts.Edition,
+                opts.Esu).Wait();
         }
 
         internal static void ParseReplayOptions(DownloadReplayOptions opts)
@@ -177,11 +178,12 @@ namespace UUPDownload.DownloadRequest
                     string Password,
                     string OutputFolder,
                     string Language,
-                    string Edition)
+                    string Edition,
+                    bool Esu)
         {
             Logging.Log("Checking for updates...");
 
-            CTAC ctac = new(ReportingSku, ReportingVersion, MachineType, FlightRing, FlightingBranchName, BranchReadinessLevel, CurrentBranch, ReleaseType, SyncCurrentVersionOnly, ContentType: ContentType);
+            CTAC ctac = new(ReportingSku, ReportingVersion, MachineType, FlightRing, FlightingBranchName, BranchReadinessLevel, CurrentBranch, ReleaseType, SyncCurrentVersionOnly, ContentType: ContentType, IsEsu: Esu);
             string token = string.Empty;
             if (!string.IsNullOrEmpty(Mail) && !string.IsNullOrEmpty(Password))
             {
@@ -190,6 +192,17 @@ namespace UUPDownload.DownloadRequest
 
             IEnumerable<UpdateData> data = await FE3Handler.GetUpdates(null, ctac, token, FileExchangeV3UpdateFilter.ProductRelease);
             //data = data.Select(x => UpdateUtils.TrimDeltasFromUpdateData(x));
+
+            if (!data.Any())
+            {
+                // The Windows Update servers occasionally answer with an empty set
+                // when several requests are made in quick succession (rate limiting).
+                // Retry once before reporting "nothing", so a valid request does not
+                // spuriously fail to download the newest build of a channel.
+                Logging.Log("No updates were returned, retrying once...");
+                await Task.Delay(1500);
+                data = await FE3Handler.GetUpdates(null, ctac, token, FileExchangeV3UpdateFilter.ProductRelease);
+            }
 
             if (!data.Any())
             {

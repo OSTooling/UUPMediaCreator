@@ -584,7 +584,13 @@ namespace UnifiedUpdatePlatform.Services.WindowsUpdate.Downloads
             return OutputFolder;
         }
 
+#if NET7_0_OR_GREATER
         [GeneratedRegex("[\\\\/:*?\"<>|]")]
         private static partial Regex invalidCharactersRegex();
+#else
+        private static readonly Regex invalidCharactersRegexInstance = new("[\\\\/:*?\"<>|]", RegexOptions.Compiled);
+
+        private static Regex invalidCharactersRegex() => invalidCharactersRegexInstance;
+#endif
     }
 }

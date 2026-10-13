@@ -116,6 +116,12 @@ namespace UUPDownload
         {
             get; set;
         }
+
+        [Option('u', "esu", HelpText = "Report this device as enrolled in Windows 10 Extended Security Updates (ESU). This makes the Windows Update servers offer the Windows 10 22H2 ESU cumulative/feature updates (for example 10.0.19045.7727). Use with -r Retail -b Retail -c vb_release.", Required = false, Default = false)]
+        public bool Esu
+        {
+            get; set;
+        }
     }
 
     [Verb("replay-download", isDefault: false, HelpText = "Replay a download from zero using a *.uupmcreplay file.")]

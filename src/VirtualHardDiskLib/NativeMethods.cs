@@ -159,7 +159,7 @@ namespace VirtualHardDiskLib
         [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool SetVolumeMountPoint([MarshalAs(UnmanagedType.LPWStr)] string mountPoint, [MarshalAs(UnmanagedType.LPWStr)] string volumeName);
 
-        public static IntPtr INVALID_HANDLE_VALUE = -1;
+        public static IntPtr INVALID_HANDLE_VALUE = new(-1);
 
         [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
         public struct STORAGE_DEVICE_NUMBER
